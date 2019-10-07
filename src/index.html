@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <style type="text/css">
+            body {
+                background-color: gray;
+                padding: 0px;
+                margin: 0px;
+            }
+        </style>
+        <title>Spotify TrayPal</title>
+        <script>
+            function syncHeight() {
+                document.getElementById('app').style.height = window.innerHeight + 'px'
+                document.getElementById('app').style.width = window.innerWidth + 'px'
+            }
+            window.addEventListener('resize', e => {
+                syncHeight()
+            })
+            window.onload = syncHeight
+        </script>
+    </head>
+    <body>
+        <!-- <video autoplay></video>
+        <img id="frame" width="300" height="300" />
+        <script type="text/javascript">
+            function errorCallback(e) {
+                console.log('Error', e)
+            }
+
+            navigator.getUserMedia(
+                { video: true, audio: false },
+                localMediaStream => {
+                    console.log({ localMediaStream })
+                    const track = localMediaStream.getVideoTracks()[0]
+                    let imageCapture = new ImageCapture(track)
+                    console.log('IMAEG:', imageCapture)
+                    imageCapture.takePhoto().then(blob => {
+                        document.getElementById('frame').srcObject = blob
+                        document.getElementById('frame').src = URL.createObjectURL(blob)
+                        console.log({ blob })
+                    })
+                    var video = document.querySelector('video')
+                    video.srcObject = localMediaStream
+                    video.onloadedmetadata = e => {
+                        // Ready to go. Do some stuff.
+                    }
+                },
+                errorCallback
+            )
+        </script> -->
+        <div id="app"></div>
+    </body>
+</html>

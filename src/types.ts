@@ -21,3 +21,11 @@ export interface SpotifyPlaybackState {
         volume_percent: number
     }
 }
+
+export enum SpotifyEvents {
+    List = 'SPOTIFY-LIST',
+    State = 'SPOTIFY-STATE',
+    Menu = 'SPOTIFY-SYNCMENU',
+    Play = 'SPOTIFY-PLAY',
+    Settings = 'SPOTIFY-SETTINGS'
+}

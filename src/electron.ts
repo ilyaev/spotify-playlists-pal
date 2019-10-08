@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu, Tray, MenuItemConstructorOptions } from 'electron'
-import { SpotfyPlaylist, SpotifyPlaybackState } from './types'
+import { SpotfyPlaylist, SpotifyPlaybackState, SpotifyEvents } from './types'
 
 let contextMenu: Menu
 let tray: Tray
@@ -27,18 +27,18 @@ function createWindow() {
         }
     })
 
-    ipcMain.on('SPOTIFY-LIST', (_event, list: SpotfyPlaylist[]) => {
-        win.hide()
+    ipcMain.on(SpotifyEvents.List, (_event, list: SpotfyPlaylist[]) => {
+        // win.hide()
         playlists = [...list]
         contextMenu = Menu.buildFromTemplate([{ label: 'All Playlists', submenu: Menu.buildFromTemplate(buildMenuItems(list)) }])
         tray.setContextMenu(contextMenu)
     })
 
-    ipcMain.on('SPOTIFY-STATE', (_event, state: SpotifyPlaybackState) => {
-        syncMenuWithPlaylist(state.context.uri)
+    ipcMain.on(SpotifyEvents.State, (_event, state: SpotifyPlaybackState) => {
+        syncMenuWithPlaylist(state && state.context && state.context.uri ? state.context.uri : '')
     })
 
-    ipcMain.on('SPOTIFY-SYNCMENU', (_event, uri: string) => {
+    ipcMain.on(SpotifyEvents.Menu, (_event, uri: string) => {
         syncMenuWithPlaylist(uri)
     })
 
@@ -53,13 +53,13 @@ function createWindow() {
     })
 }
 
-app.on('ready', createWindow)
-
 const syncMenuWithPlaylist = async (uri: string) => {
     const itemIndex = playlists.findIndex(item => item.uri === uri)
+    const db = (await localStorage.getItem('SPOTIFY_FAVORITES')) || '[]'
+
+    let favorites = JSON.parse(db) as any[]
+
     if (itemIndex >= 0) {
-        const db = (await localStorage.getItem('SPOTIFY_FAVORITES')) || '[]'
-        let favorites = JSON.parse(db) as any[]
         const index = favorites.findIndex(item => item.uri === uri)
         if (index >= 0) {
             favorites[index] = Object.assign({}, favorites[index], {
@@ -74,33 +74,30 @@ const syncMenuWithPlaylist = async (uri: string) => {
                 ts: new Date()
             })
         }
-        localStorage.setItem('SPOTIFY_FAVORITES', JSON.stringify(favorites.sort((a, b) => (a.count > b.count ? -1 : 1))))
-        contextMenu = Menu.buildFromTemplate(
-            buildMenuItems(getFavPlaylists(favorites))
-                .concat([{ type: 'separator' }])
-                .concat([
-                    {
-                        label: 'All Playlists',
-                        submenu: Menu.buildFromTemplate(buildMenuItems(playlists))
-                    }
-                ] as MenuItemConstructorOptions[])
-                .concat([
-                    { type: 'separator' },
-                    { label: 'Settings', click: _event => onSettings() },
-                    { type: 'separator' },
-                    { role: 'quit' }
-                ])
-        )
-        tray.setContextMenu(contextMenu)
-        const menuIndex = contextMenu.items.findIndex(item => item.id === uri)
-        if (menuIndex >= 0) {
-            contextMenu.items[menuIndex].checked = true
-        }
+        await localStorage.setItem('SPOTIFY_FAVORITES', JSON.stringify(favorites.sort((a, b) => (a.count > b.count ? -1 : 1))))
+    }
+
+    contextMenu = Menu.buildFromTemplate(
+        buildMenuItems(getFavPlaylists(favorites))
+            .concat([{ type: 'separator' }])
+            .concat([
+                {
+                    label: 'All Playlists',
+                    submenu: Menu.buildFromTemplate(buildMenuItems(playlists))
+                }
+            ] as MenuItemConstructorOptions[])
+            .concat([{ type: 'separator' }, { label: 'Settings', click: _event => onSettings() }, { type: 'separator' }, { role: 'quit' }])
+    )
+    tray.setContextMenu(contextMenu)
+
+    const menuIndex = contextMenu.items.findIndex(item => item.id === uri)
+    if (menuIndex >= 0) {
+        contextMenu.items[menuIndex].checked = true
     }
 }
 
 const onSettings = () => {
-    win.webContents.send('SPOTIFY-SETTINGS', true)
+    win.webContents.send(SpotifyEvents.Settings, true)
     win.show()
 }
 
@@ -121,7 +118,7 @@ const buildMenuItems = (list: SpotfyPlaylist[]): MenuItemConstructorOptions[] =>
             type: 'radio',
             id: one.uri,
             click: _event => {
-                win.webContents.send('SPOTIFY-PLAY', one.uri)
+                win.webContents.send(SpotifyEvents.Play, one.uri)
                 tray.setToolTip(`${one.name} - ${one.tracks.total} tracks`)
                 syncMenuWithPlaylist(one.uri)
             }
@@ -137,3 +134,5 @@ const localStorage = {
         return win.webContents.executeJavaScript(`localStorage.getItem('${item}')`)
     }
 }
+
+app.on('ready', createWindow)

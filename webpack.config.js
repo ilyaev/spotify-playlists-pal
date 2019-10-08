@@ -40,6 +40,9 @@ module.exports = [
         entry: './src/electron.ts',
         target: 'electron-main',
         devtool: 'source-map',
+        resolve: {
+            extensions: ['.ts', '.js']
+        },
         externals: [nodeExternals()],
         devServer: {
             contentBase: 'dist/'

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { bem } from '../utils'
 import { ipcRenderer } from 'electron'
 import { SPOTIFY_CLIENT_ID } from '../env'
-import { SpotfyPlaylist, SpotifyPlaybackState } from '../types'
+import { SpotfyPlaylist, SpotifyPlaybackState, SpotifyEvents } from '../types'
 
 let SpotifyWebApi = require('spotify-web-api-node')
 let spotifyApi
@@ -57,22 +57,22 @@ export class AppSpotify extends React.Component<Props, State> {
 
         this.setState({ playlists: playlists.sort((a, b) => (a.name < b.name ? -1 : 1)) })
 
-        ipcRenderer.send('SPOTIFY-LIST', playlists)
+        ipcRenderer.send(SpotifyEvents.List, playlists)
 
-        ipcRenderer.on('SPOTIFY-PLAY', (_event, uri) => {
+        ipcRenderer.on(SpotifyEvents.Play, (_event, uri) => {
             spotifyApi.play({
                 context_uri: uri
             })
         })
 
-        ipcRenderer.on('SPOTIFY-SETTINGS', _event => {
+        ipcRenderer.on(SpotifyEvents.Settings, _event => {
             this.setState({
                 mode: 'settings'
             })
         })
 
         const myState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
-        ipcRenderer.send('SPOTIFY-STATE', myState)
+        ipcRenderer.send(SpotifyEvents.State, myState)
 
         console.log(myState)
 
@@ -84,7 +84,7 @@ export class AppSpotify extends React.Component<Props, State> {
         spotifyApi.play({
             context_uri: list.uri
         })
-        ipcRenderer.send('SPOTIFY-SYNCMENU', list.uri)
+        ipcRenderer.send(SpotifyEvents.Menu, list.uri)
     }
 
     renderSettings() {

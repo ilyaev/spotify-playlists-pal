@@ -10,16 +10,6 @@
             }
         </style>
         <title>Spotify TrayPal</title>
-        <script>
-            function syncHeight() {
-                document.getElementById('app').style.height = window.innerHeight + 'px'
-                document.getElementById('app').style.width = window.innerWidth + 'px'
-            }
-            window.addEventListener('resize', e => {
-                syncHeight()
-            })
-            window.onload = syncHeight
-        </script>
     </head>
     <body>
         <div id="app"></div>

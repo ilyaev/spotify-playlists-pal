@@ -22,6 +22,10 @@ export class AppSpotify extends React.Component<Props, State> {
     componentDidMount() {
         this.initialize()
         ipcRenderer.send(SpotifyEvents.SendList)
+        const hash = document.location.hash.replace('#', '')
+        this.setState({
+            mode: hash || 'index'
+        })
     }
 
     initialize() {
@@ -40,13 +44,18 @@ export class AppSpotify extends React.Component<Props, State> {
         return <div>Settings Here!</div>
     }
 
+    renderServerError() {
+        return <div style={{ color: 'red' }}>Spotify Auth Server is not responding. Check settings or setup one</div>
+    }
+
     render() {
         return (
             <div className={styles()}>
-                {this.state.mode === 'settings' ? (
-                    this.renderSettings()
-                ) : (
+                {this.state.mode === 'settings' && this.renderSettings()}
+                {this.state.mode === 'SERVER_ERROR' && this.renderServerError()}
+                {this.state.mode === 'index' && (
                     <div className={styles('list')}>
+                        {this.state.playlists.length <= 0 && <div>Loading...</div>}
                         {this.state.playlists.map(list => {
                             return (
                                 <div key={`id${list.id}`} onClick={() => this.onListClick(list)} className={styles('link')}>

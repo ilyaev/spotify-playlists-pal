@@ -143,7 +143,7 @@ export class AppWindow {
                 }
             })
             .catch(_e => {
-                this.goAuthSpotify()
+                this.win.loadFile('index.html', { hash: 'SERVER_ERROR' })
             })
     }
 

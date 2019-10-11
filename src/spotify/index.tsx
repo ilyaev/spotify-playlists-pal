@@ -1,11 +1,7 @@
 import * as React from 'react'
 import { bem } from '../utils'
-import { ipcRenderer } from 'electron'
-import { SPOTIFY_CLIENT_ID } from '../env'
-import { SpotfyPlaylist, SpotifyPlaybackState, SpotifyEvents } from '../types'
-
-let SpotifyWebApi = require('spotify-web-api-node')
-let spotifyApi
+import { SpotifyPlaylist, SpotifyEvents } from '../utils/types'
+import { ipcRenderer, ipcMain } from 'electron'
 
 const styles = bem('spotify')
 import './index.less'
@@ -13,7 +9,7 @@ import './index.less'
 interface Props {}
 
 interface State {
-    playlists: SpotfyPlaylist[]
+    playlists: SpotifyPlaylist[]
     mode: string
 }
 
@@ -24,67 +20,20 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        spotifyApi = new SpotifyWebApi({
-            clientId: SPOTIFY_CLIENT_ID,
-            redirectUri: 'http://127.0.0.1/'
-        })
-
-        var scopes = [
-            'user-read-private',
-            'user-read-email',
-            'playlist-read-private',
-            'streaming',
-            'user-read-playback-state',
-            'user-read-currently-playing'
-        ]
-        const state = 'supercharge'
-
-        if (document.location.hash) {
-            const authToken = document.location.hash.replace('#', '').split('&')[0]
-            spotifyApi.setAccessToken(authToken)
-            this.initialize()
-        } else {
-            var authorizeURL = spotifyApi.createAuthorizeURL(scopes, state).replace('response_type=code', 'response_type=token')
-            document.location.href = authorizeURL
-        }
+        this.initialize()
+        ipcRenderer.send(SpotifyEvents.SendList)
     }
 
-    async initialize() {
-        console.log(spotifyApi)
-        const playlists = (await spotifyApi
-            .getUserPlaylists(undefined, { limit: 50 })
-            .then(res => res.body.items || [])) as SpotfyPlaylist[]
-
-        this.setState({ playlists: playlists.sort((a, b) => (a.name < b.name ? -1 : 1)) })
-
-        ipcRenderer.send(SpotifyEvents.List, playlists)
-
-        ipcRenderer.on(SpotifyEvents.Play, (_event, uri) => {
-            spotifyApi.play({
-                context_uri: uri
-            })
+    initialize() {
+        ipcRenderer.on(SpotifyEvents.List, (_event, type, data) => {
+            if (type === 'all') {
+                this.setState({ playlists: [...data] })
+            }
         })
-
-        ipcRenderer.on(SpotifyEvents.Settings, _event => {
-            this.setState({
-                mode: 'settings'
-            })
-        })
-
-        const myState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
-        ipcRenderer.send(SpotifyEvents.State, myState)
-
-        console.log(myState)
-
-        const me = await spotifyApi.getMe().then(res => res.body)
-        console.log(me)
     }
 
-    onListClick(list: SpotfyPlaylist) {
-        spotifyApi.play({
-            context_uri: list.uri
-        })
-        ipcRenderer.send(SpotifyEvents.Menu, list.uri)
+    onListClick(list: SpotifyPlaylist) {
+        console.log('Click', list)
     }
 
     renderSettings() {

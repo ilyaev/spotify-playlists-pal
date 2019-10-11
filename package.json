@@ -36,7 +36,10 @@
         "webpack-node-externals": "^1.7.2"
     },
     "dependencies": {
+        "@types/node-fetch": "^2.5.2",
         "elemon": "^5.0.3",
-        "konva": "^4.0.12"
+        "express": "^4.17.1",
+        "konva": "^4.0.12",
+        "node-fetch": "^2.6.0"
     }
 }

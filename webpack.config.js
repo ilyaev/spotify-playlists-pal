@@ -37,7 +37,7 @@ module.exports = [
     },
     {
         mode: 'development',
-        entry: './src/electron.ts',
+        entry: './src/main.ts',
         target: 'electron-main',
         devtool: 'source-map',
         resolve: {

@@ -8,6 +8,7 @@
         "build": "webpack --config ./webpack.config.js",
         "dev": "webpack --config ./webpack.config.js --watch",
         "start": "electron ./dist/electron.js",
+        "server": "cd server && node server.js",
         "run": "electron ./dist/electron.js"
     },
     "author": "ilyaev@gmail.com",

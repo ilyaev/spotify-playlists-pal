@@ -7,7 +7,15 @@ import {
     SPOTIFY_CALLBACK_URL,
     SPOTIFY_TOKEN_SERVER
 } from '../utils/const'
-import { SpotifyAuth, SpotifyPlaybackState, SpotifyMe, SpotifyPlaylist, SpotifyEvents } from '../utils/types'
+import {
+    SpotifyAuth,
+    SpotifyPlaybackState,
+    SpotifyMe,
+    SpotifyPlaylist,
+    SpotifyEvents,
+    SpotifyRecentItem,
+    SpotifyAlbum
+} from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
 import { spotifyApi } from '../utils/api'
@@ -40,6 +48,7 @@ export class AppWindow {
         this.listenToRedirects()
 
         this.playlists = new SpotifyPlaylists()
+
         this.tray = new AppTray(this.win, this.playlists, {
             onPlaylistClick: this.onPlaylistClick.bind(this)
         })
@@ -58,6 +67,7 @@ export class AppWindow {
     onPlaylistClick(list: SpotifyPlaylist) {
         this.setItem('SPOTIFY_FAVORITES', JSON.stringify(this.playlists.addFavorite(list.uri)))
 
+        this.tray.syncCurrentUri(list.uri)
         this.tray.refresh()
 
         spotifyApi.play({
@@ -66,9 +76,9 @@ export class AppWindow {
     }
 
     async initialize() {
+        await this.loadPlaylists()
         await this.syncPlaybackState()
         this.me = await spotifyApi.getMe().then(res => res.body)
-        this.loadPlaylists()
     }
 
     async loadPlaylists() {
@@ -76,16 +86,27 @@ export class AppWindow {
             .getUserPlaylists(undefined, { limit: 50 })
             .then(res => res.body.items || [])) as SpotifyPlaylist[]
 
+        const recent = (await spotifyApi
+            .getMyRecentlyPlayedTracks({ limit: 50 })
+            .then(res => res.body.items || [])
+            .catch(_e => [])) as SpotifyRecentItem[]
+
+        const albums = (await spotifyApi
+            .getMySavedAlbums({ limit: 50 })
+            .then(res => res.body.items.map(one => one.album))
+            .catch(_e => [])) as SpotifyAlbum[]
+
         const db = (await this.getItem('SPOTIFY_FAVORITES')) || '[]'
 
         const favorites = JSON.parse(db) as any[]
-        this.playlists.sync(playlists, favorites)
+        this.playlists.sync(playlists, favorites, recent, albums)
         this.tray.refresh()
         this.win.webContents.send(SpotifyEvents.List, 'all', this.playlists.all)
     }
 
     async syncPlaybackState() {
         this.playbackState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
+        this.tray.syncState(this.playbackState)
     }
 
     async authSpotify() {
@@ -114,12 +135,15 @@ export class AppWindow {
                     .then(res => res.json())
                     .then(body => {
                         if (!body.success) {
-                            throw new Error('No')
+                            this.win.loadFile('index.html', { hash: 'SERVER_ERROR' })
                         } else {
                             this.goIndex()
                             this.syncAuth(body)
                             this.initialize()
                         }
+                    })
+                    .catch(_e => {
+                        this.win.loadFile('index.html', { hash: 'SERVER_ERROR' })
                     })
             }
         })

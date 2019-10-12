@@ -8,7 +8,11 @@ export const SPOTIFY_AUTH_SCOPE = [
     'playlist-read-private',
     'streaming',
     'user-read-playback-state',
-    'user-read-currently-playing'
+    'user-read-currently-playing',
+    'user-read-recently-played',
+    'user-top-read',
+    'user-library-read'
 ]
 export const SPOTIFY_AUTH_STATE = 'supercharge'
-export const SPOTIFY_TOKEN_SERVER = 'http://localhost:3002/'
+
+export { SPOTIFY_TOKEN_SERVER } from '../env'

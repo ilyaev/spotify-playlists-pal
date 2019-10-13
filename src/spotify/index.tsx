@@ -2,6 +2,8 @@ import * as React from 'react'
 import { bem } from '../utils'
 import { SpotifyPlaylist, SpotifyEvents } from '../utils/types'
 import { ipcRenderer, ipcMain } from 'electron'
+import { Box, Text } from 'react-desktop/macOs'
+import { PageSettings } from './settings'
 
 const styles = bem('spotify')
 import './index.less'
@@ -16,7 +18,7 @@ interface State {
 export class AppSpotify extends React.Component<Props, State> {
     state: State = {
         playlists: [],
-        mode: 'index'
+        mode: 'index',
     }
 
     componentDidMount() {
@@ -24,7 +26,7 @@ export class AppSpotify extends React.Component<Props, State> {
         ipcRenderer.send(SpotifyEvents.SendList)
         const hash = document.location.hash.replace('#', '')
         this.setState({
-            mode: hash || 'index'
+            mode: hash || 'index',
         })
     }
 
@@ -48,10 +50,20 @@ export class AppSpotify extends React.Component<Props, State> {
         return <div style={{ color: 'red' }}>Spotify Auth Server is not responding. Check settings or setup one</div>
     }
 
+    onApplySettings() {
+        ipcRenderer.send(SpotifyEvents.ApplySettings)
+    }
+
+    onCancelSettings() {
+        ipcRenderer.send(SpotifyEvents.CancelSettings)
+    }
+
     render() {
         return (
             <div className={styles()}>
-                {this.state.mode === 'settings' && this.renderSettings()}
+                {this.state.mode === 'settings' && (
+                    <PageSettings onApply={this.onApplySettings.bind(this)} onCancel={this.onCancelSettings.bind(this)} />
+                )}
                 {this.state.mode === 'SERVER_ERROR' && this.renderServerError()}
                 {this.state.mode === 'index' && (
                     <div className={styles('list')}>

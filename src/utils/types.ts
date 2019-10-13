@@ -1,5 +1,12 @@
 export const INSTANCE_ID = 'atz'
 
+export interface Settings {
+    max_size: string
+    order_recent_playlist: string
+    order_playlists: string
+    lunch_at_login: boolean
+}
+
 export interface SpotifyArtist {
     name: string
     uri: string
@@ -90,5 +97,7 @@ export enum SpotifyEvents {
     Menu = 'SPOTIFY-SYNCMENU',
     Play = 'SPOTIFY-PLAY',
     Settings = 'SPOTIFY-SETTINGS',
-    SendList = 'SPOTIFY-SEND-LIST'
+    SendList = 'SPOTIFY-SEND-LIST',
+    ApplySettings = 'SPOTIFY-APPLY-SETTINGS',
+    CancelSettings = 'SPOTIFY-CANCEL-SETTINGS',
 }

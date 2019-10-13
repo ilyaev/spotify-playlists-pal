@@ -1,6 +1,6 @@
 import { SpotifyPlaylist, SpotifyFavoriteList, SpotifyRecentItem, SpotifyAlbum } from '../utils/types'
 
-const findByUri = uri => item => (item.uri === uri ? true : false)
+const findByUri = (uri: string) => (item: { uri: string }) => (item.uri === uri ? true : false)
 const appendArtistToAlbum = (one: SpotifyAlbum) =>
     Object.assign({}, one, { name: one.artists[0] ? one.name + ' - ' + one.artists[0].name : one.name })
 
@@ -10,11 +10,12 @@ export class SpotifyPlaylists {
     recent: SpotifyRecentItem[] = []
     recentAlbums: SpotifyAlbum[] = []
     albums: SpotifyAlbum[] = []
+    max_size: number = 10
 
     constructor() {}
 
     sync(lists: SpotifyPlaylist[], favorites: SpotifyFavoriteList[], recent: SpotifyRecentItem[], albums: SpotifyAlbum[]) {
-        this.all = [...lists].sort((a, b) => (a.name > b.name ? 1 : -1))
+        this.all = [...lists] //.sort((a, b) => (a.name > b.name ? 1 : -1))
         this.favs = [...favorites]
         this.recent = [...recent]
         this.albums = albums.map(appendArtistToAlbum)
@@ -41,10 +42,13 @@ export class SpotifyPlaylists {
         }
 
         if (favIndex >= 0) {
-            this.favs[favIndex] = Object.assign({}, this.favs[favIndex], { count: this.favs[favIndex].count + 1, ts: new Date() })
+            this.favs[favIndex] = Object.assign({}, this.favs[favIndex], {
+                count: this.favs[favIndex].count + 1,
+                ts: new Date().toISOString(),
+            })
         } else {
-            this.favs = this.favs.slice(0, 9)
-            this.favs.push({ uri, count: 0, ts: new Date() })
+            this.favs = this.favs.slice(0, this.max_size - 1)
+            this.favs.push({ uri, count: 0, ts: new Date().toISOString() })
         }
 
         this.favs = this.favs.sort((a, b) => (a.count > b.count ? -1 : 1))
@@ -56,14 +60,24 @@ export class SpotifyPlaylists {
         return this.all.filter(item => (uris.indexOf(item.uri) !== -1 ? true : false))
     }
 
-    getFavPlaylists(): SpotifyPlaylist[] {
+    getFavPlaylists(max_size: number, order: string): SpotifyPlaylist[] {
+        this.max_size = max_size
         const list = this.getPlaylists(this.favs.map(item => item.uri))
-        return this.favs
+        return [...this.favs]
+            .sort((a, b) => (order === 'time_added' ? (a.ts > b.ts ? -1 : 1) : 0))
             .map(item => {
                 const playlist = list.find(one => one.uri === item.uri)
                 const album = this.recentAlbums.find(one => one.uri === item.uri) || this.albums.find(one => one.uri === item.uri)
                 return playlist || album || ({ name: 'NoName', uri: '' } as any)
             })
             .filter(one => (one.uri ? true : false))
+            .slice(0, max_size)
+            .sort((a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0))
+    }
+
+    getDisplayName(uri: string) {
+        const playlist = this.all.find(findByUri(uri)) || { name: '' }
+        const album = this.albums.find(findByUri(uri)) || { name: '' }
+        return playlist.name || album.name || 'Unknown'
     }
 }

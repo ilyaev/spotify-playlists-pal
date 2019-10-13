@@ -1,11 +1,13 @@
-import { BrowserWindow, app, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain, LoadFileOptions } from 'electron'
 import {
     APP_WINDOW_HEIGHT,
     APP_WINDOW_WIDTH,
     SPOTIFY_AUTH_SCOPE,
     SPOTIFY_AUTH_STATE,
     SPOTIFY_CALLBACK_URL,
-    SPOTIFY_TOKEN_SERVER
+    SPOTIFY_TOKEN_SERVER,
+    SETTINGS_STORAGE_KEY,
+    SETTINGS_DEFAULTS,
 } from '../utils/const'
 import {
     SpotifyAuth,
@@ -14,7 +16,8 @@ import {
     SpotifyPlaylist,
     SpotifyEvents,
     SpotifyRecentItem,
-    SpotifyAlbum
+    SpotifyAlbum,
+    Settings,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
@@ -38,9 +41,10 @@ export class AppWindow {
         this.win = new BrowserWindow({
             width: APP_WINDOW_WIDTH,
             height: APP_WINDOW_HEIGHT,
+            show: false,
             webPreferences: {
-                nodeIntegration: true
-            }
+                nodeIntegration: true,
+            },
         })
 
         this.listenToEvents()
@@ -48,10 +52,6 @@ export class AppWindow {
         this.listenToRedirects()
 
         this.playlists = new SpotifyPlaylists()
-
-        this.tray = new AppTray(this.win, this.playlists, {
-            onPlaylistClick: this.onPlaylistClick.bind(this)
-        })
 
         this.devSetup()
 
@@ -62,6 +62,30 @@ export class AppWindow {
         ipcMain.on(SpotifyEvents.SendList, (_event, type) => {
             this.win.webContents.send(SpotifyEvents.List, type || 'all', this.playlists.all)
         })
+
+        ipcMain.on(SpotifyEvents.ApplySettings, async _event => {
+            const settings = JSON.parse(await this.getItem(SETTINGS_STORAGE_KEY)) as Settings
+            this.tray.applySettings(settings)
+            this.win.hide()
+        })
+
+        ipcMain.on(SpotifyEvents.CancelSettings, _event => {
+            this.win.hide()
+        })
+
+        this.win.on('close', event => {
+            if (this.win.isVisible()) {
+                event.preventDefault()
+                this.win.hide()
+            }
+        })
+    }
+
+    onSettings() {
+        this.win.show()
+        if (this.win.webContents.getURL().indexOf('#settings') === -1) {
+            this.goIndex({ hash: 'settings' })
+        }
     }
 
     onPlaylistClick(list: SpotifyPlaylist) {
@@ -71,7 +95,7 @@ export class AppWindow {
         this.tray.refresh()
 
         spotifyApi.play({
-            context_uri: list.uri
+            context_uri: list.uri,
         })
     }
 
@@ -82,26 +106,38 @@ export class AppWindow {
     }
 
     async loadPlaylists() {
-        const playlists = (await spotifyApi
-            .getUserPlaylists(undefined, { limit: 50 })
-            .then(res => res.body.items || [])) as SpotifyPlaylist[]
-
-        const recent = (await spotifyApi
-            .getMyRecentlyPlayedTracks({ limit: 50 })
-            .then(res => res.body.items || [])
-            .catch(_e => [])) as SpotifyRecentItem[]
-
-        const albums = (await spotifyApi
-            .getMySavedAlbums({ limit: 50 })
-            .then(res => res.body.items.map(one => one.album))
-            .catch(_e => [])) as SpotifyAlbum[]
+        const [playlists, recent, albums] = await Promise.all([
+            spotifyApi
+                .getUserPlaylists(undefined, { limit: 50 })
+                .then(res => res.body.items || [])
+                .catch(_e => []) as Promise<SpotifyPlaylist[]>,
+            spotifyApi
+                .getMyRecentlyPlayedTracks({ limit: 50 })
+                .then(res => res.body.items || [])
+                .catch(_e => []) as Promise<SpotifyRecentItem[]>,
+            spotifyApi
+                .getMySavedAlbums({ limit: 50 })
+                .then(res => res.body.items.map(one => one.album))
+                .catch(_e => []) as Promise<SpotifyAlbum[]>,
+        ])
 
         const db = (await this.getItem('SPOTIFY_FAVORITES')) || '[]'
 
         const favorites = JSON.parse(db) as any[]
         this.playlists.sync(playlists, favorites, recent, albums)
-        this.tray.refresh()
+        if (!this.tray) {
+            this.initTray()
+        }
         this.win.webContents.send(SpotifyEvents.List, 'all', this.playlists.all)
+    }
+
+    async initTray() {
+        const settingsRaw = (await this.getItem(SETTINGS_STORAGE_KEY)) || SETTINGS_DEFAULTS
+        this.tray = new AppTray(this.win, this.playlists, JSON.parse(settingsRaw) as Settings, {
+            onPlaylistClick: this.onPlaylistClick.bind(this),
+            onSettings: this.onSettings.bind(this),
+        })
+        this.tray.refresh()
     }
 
     async syncPlaybackState() {
@@ -110,7 +146,7 @@ export class AppWindow {
     }
 
     async authSpotify() {
-        this.goIndex()
+        this.goIndex({ hash: 'settings' })
         const authRaw = await this.getItem('SPOTIFY_AUTH')
         this.auth = JSON.parse(authRaw || JSON.stringify({ access_token: '' }))
 
@@ -124,6 +160,8 @@ export class AppWindow {
 
     goAuthSpotify() {
         this.win.loadURL(spotifyApi.createAuthorizeURL(SPOTIFY_AUTH_SCOPE, SPOTIFY_AUTH_STATE))
+        this.win.setSize(800, 600)
+        this.win.show()
     }
 
     listenToRedirects() {
@@ -135,22 +173,24 @@ export class AppWindow {
                     .then(res => res.json())
                     .then(body => {
                         if (!body.success) {
-                            this.win.loadFile('index.html', { hash: 'SERVER_ERROR' })
+                            this.goIndex({ hash: 'SERVER_ERROR' })
                         } else {
+                            this.win.hide()
+                            this.win.setSize(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
                             this.goIndex()
                             this.syncAuth(body)
                             this.initialize()
                         }
                     })
                     .catch(_e => {
-                        this.win.loadFile('index.html', { hash: 'SERVER_ERROR' })
+                        this.goIndex({ hash: 'SERVER_ERROR' })
                     })
             }
         })
     }
 
-    goIndex() {
-        this.win.loadFile('index.html')
+    goIndex(options: LoadFileOptions = {}) {
+        this.win.loadFile('index.html', options)
     }
 
     async refreshToken() {
@@ -167,7 +207,7 @@ export class AppWindow {
                 }
             })
             .catch(_e => {
-                this.win.loadFile('index.html', { hash: 'SERVER_ERROR' })
+                this.goIndex({ hash: 'SERVER_ERROR' })
             })
     }
 
@@ -182,7 +222,7 @@ export class AppWindow {
         elemon({
             app: app,
             mainFile: 'electron.js',
-            bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }]
+            bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }],
         })
     }
 

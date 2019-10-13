@@ -1,0 +1,12 @@
+{
+  "name": "pbartz.electron.spotify.traypal",
+  "version": "1.0.0",
+  "description": "Spotify Playlists Tray Pal",
+  "main": "main.js",
+  "author": "Yura Ilyaev<ilyaev@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "spotify-web-api-node": "^4.0.0",
+    "node-fetch": "^2.6.0"
+  }
+}

@@ -1,47 +1,66 @@
 {
-    "name": "pbartz.electron.spotify.playlists.pal",
-    "version": "1.0.0",
-    "description": "Spotify Playlists Tray Pal",
-    "main": "dist/electron.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "webpack --config ./webpack.config.js",
-        "dev": "webpack --config ./webpack.config.js --watch",
-        "start": "electron ./dist/electron.js",
-        "server": "cd server && node server.js",
-        "run": "electron ./dist/electron.js"
-    },
-    "author": "ilyaev@gmail.com",
-    "license": "ISC",
-    "devDependencies": {
-        "@types/react": "^16.9.3",
-        "@types/react-dom": "^16.9.1",
-        "@types/spotify-web-api-node": "^4.0.1",
-        "copy-webpack-plugin": "^5.0.4",
-        "css-loader": "^3.2.0",
-        "devtron": "^1.4.0",
-        "electron": "^6.0.10",
-        "html-webpack-plugin": "^3.2.0",
-        "less": "^3.10.3",
-        "less-loader": "^5.0.0",
-        "react": "^16.10.1",
-        "react-desktop": "^0.3.9",
-        "react-dom": "^16.10.1",
-        "react-konva": "^16.10.1-0",
-        "spotify-web-api-node": "^4.0.0",
-        "style-loader": "^1.0.0",
-        "ts-loader": "^6.1.2",
-        "typescript": "^3.6.3",
-        "uglifyjs-webpack-plugin": "^2.2.0",
-        "webpack": "^4.41.0",
-        "webpack-cli": "^3.3.9",
-        "webpack-node-externals": "^1.7.2"
-    },
-    "dependencies": {
-        "@types/node-fetch": "^2.5.2",
-        "elemon": "^5.0.3",
-        "express": "^4.17.1",
-        "konva": "^4.0.12",
-        "node-fetch": "^2.6.0"
+  "name": "pbartz.electron.spotify.traypal",
+  "version": "1.0.0",
+  "description": "Spotify Playlists Tray Pal",
+  "main": "app/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config ./webpack.config.js",
+    "dev": "webpack --config ./webpack.config.js --watch",
+    "start": "electron ./app/main.js",
+    "server": "cd server && node server.js",
+    "run": "electron ./app/main.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "app": "./dist/mac/Spotify\\ Tray\\ Pal.app/Contents/MacOS/Spotify\\ Tray\\ Pal"
+  },
+  "build": {
+    "appId": "pbartz.electron.spotify.traypal",
+    "productName": "Spotify Tray Pal",
+    "files": [
+      "**/*",
+      "app/static/*",
+      "static/*"
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "target": "dmg",
+      "icon": "app/static/play-icon.png"
     }
+  },
+  "author": "Yura Ilyaev<ilyaev@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^16.9.3",
+    "@types/react-dom": "^16.9.1",
+    "@types/spotify-web-api-node": "^4.0.1",
+    "copy-webpack-plugin": "^5.0.4",
+    "css-loader": "^3.2.0",
+    "devtron": "^1.4.0",
+    "electron": "^6.0.10",
+    "electron-builder": "^21.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "react": "^16.10.1",
+    "react-desktop": "^0.3.9",
+    "react-dom": "^16.10.1",
+    "react-konva": "^16.10.1-0",
+    "spotify-web-api-node": "^4.0.0",
+    "style-loader": "^1.0.0",
+    "ts-loader": "^6.1.2",
+    "typescript": "^3.6.3",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "dependencies": {
+    "@types/node-fetch": "^2.5.2",
+    "elemon": "^5.0.3",
+    "express": "^4.17.1",
+    "konva": "^4.0.12",
+    "node-fetch": "^2.6.0"
+  }
 }

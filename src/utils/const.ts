@@ -3,7 +3,8 @@ import { Settings } from './types'
 export const APP_WINDOW_WIDTH = 400
 export const APP_WINDOW_HEIGHT = 362
 export const SETTINGS_STORAGE_KEY = 'SPOTIFY-SETTINGS'
-export const TRAY_ICON_FILE = 'static/play-button-small.png'
+export const INSTANCE_ID_STORAGE_KEY = 'SPOTIFY-INSTANCE-ID'
+export const TRAY_ICON_FILE = 'static/play-icon-small.png'
 export const SPOTIFY_CALLBACK_URL = 'http://127.0.0.1/'
 export const SPOTIFY_AUTH_SCOPE = [
     'user-read-private',

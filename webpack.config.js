@@ -10,30 +10,30 @@ module.exports = [
         devtool: 'source-map',
         // watch: true,
         resolve: {
-            extensions: ['.ts', '.tsx', '.js']
+            extensions: ['.ts', '.tsx', '.js'],
         },
         module: {
             rules: [
                 {
                     test: /\.ts(x?)$/,
                     include: /src/,
-                    use: [{ loader: 'ts-loader' }]
+                    use: [{ loader: 'ts-loader' }],
                 },
                 {
                     test: /\.less$/,
-                    use: [{ loader: 'style-loader' }, { loader: 'css-loader' }, { loader: 'less-loader' }]
-                }
-            ]
+                    use: [{ loader: 'style-loader' }, { loader: 'css-loader' }, { loader: 'less-loader' }],
+                },
+            ],
         },
         output: {
-            path: __dirname + '/dist',
-            filename: 'bundle.js'
+            path: __dirname + '/app',
+            filename: 'bundle.js',
         },
         plugins: [
             new HtmlWebpackPlugin({
-                template: './src/index.html'
-            })
-        ]
+                template: './src/index.html',
+            }),
+        ],
     },
     {
         mode: 'development',
@@ -41,25 +41,25 @@ module.exports = [
         target: 'electron-main',
         devtool: 'source-map',
         resolve: {
-            extensions: ['.ts', '.js']
+            extensions: ['.ts', '.js'],
         },
         externals: [nodeExternals()],
         devServer: {
-            contentBase: 'dist/'
+            contentBase: 'app/',
         },
         module: {
             rules: [
                 {
                     test: /\.ts$/,
                     include: /src/,
-                    use: [{ loader: 'ts-loader' }]
-                }
-            ]
+                    use: [{ loader: 'ts-loader' }],
+                },
+            ],
         },
         plugins: [new CopyWebpackPlugin([{ from: 'static/', to: 'static' }])],
         output: {
-            path: __dirname + '/dist',
-            filename: 'electron.js'
-        }
-    }
+            path: __dirname + '/app',
+            filename: 'main.js',
+        },
+    },
 ]

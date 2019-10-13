@@ -8,6 +8,7 @@ import {
     SPOTIFY_TOKEN_SERVER,
     SETTINGS_STORAGE_KEY,
     SETTINGS_DEFAULTS,
+    INSTANCE_ID_STORAGE_KEY,
 } from '../utils/const'
 import {
     SpotifyAuth,
@@ -24,7 +25,7 @@ import { SpotifyPlaylists } from './playlists'
 import { spotifyApi } from '../utils/api'
 import fetch from 'node-fetch'
 
-const INSTANCE_ID = 'atz'
+let INSTANCE_ID = 'atz'
 
 export class AppWindow {
     win: BrowserWindow
@@ -41,6 +42,8 @@ export class AppWindow {
         this.win = new BrowserWindow({
             width: APP_WINDOW_WIDTH,
             height: APP_WINDOW_HEIGHT,
+            skipTaskbar: true,
+            autoHideMenuBar: true,
             show: false,
             webPreferences: {
                 nodeIntegration: true,
@@ -53,7 +56,7 @@ export class AppWindow {
 
         this.playlists = new SpotifyPlaylists()
 
-        this.devSetup()
+        // this.devSetup()
 
         this.authSpotify()
     }
@@ -74,7 +77,7 @@ export class AppWindow {
         })
 
         this.win.on('close', event => {
-            if (this.win.isVisible()) {
+            if (this.win.isVisible() && this.tray) {
                 event.preventDefault()
                 this.win.hide()
             }
@@ -132,7 +135,7 @@ export class AppWindow {
     }
 
     async initTray() {
-        const settingsRaw = (await this.getItem(SETTINGS_STORAGE_KEY)) || SETTINGS_DEFAULTS
+        const settingsRaw = (await this.getItem(SETTINGS_STORAGE_KEY)) || JSON.stringify(SETTINGS_DEFAULTS)
         this.tray = new AppTray(this.win, this.playlists, JSON.parse(settingsRaw) as Settings, {
             onPlaylistClick: this.onPlaylistClick.bind(this),
             onSettings: this.onSettings.bind(this),
@@ -152,7 +155,6 @@ export class AppWindow {
 
         if (this.auth.access_token) {
             await this.refreshToken()
-            this.initialize()
         } else {
             this.goAuthSpotify()
         }
@@ -164,7 +166,8 @@ export class AppWindow {
         this.win.show()
     }
 
-    listenToRedirects() {
+    async listenToRedirects() {
+        INSTANCE_ID = await this.generateInstanceId()
         this.win.webContents.on('will-redirect', (event, newUrl) => {
             if (newUrl.indexOf(`${SPOTIFY_CALLBACK_URL}?code=`) !== -1) {
                 event.preventDefault()
@@ -189,11 +192,20 @@ export class AppWindow {
         })
     }
 
+    async generateInstanceId() {
+        let id = await this.getItem(INSTANCE_ID_STORAGE_KEY)
+        if (!id) {
+            id = 'spotify-pal-' + Math.round(10000 + Math.random() * 100000)
+            this.setItem(INSTANCE_ID_STORAGE_KEY, id)
+        }
+        return id
+    }
+
     goIndex(options: LoadFileOptions = {}) {
         this.win.loadFile('index.html', options)
     }
 
-    async refreshToken() {
+    async refreshToken(intialize: boolean = true) {
         if (!this.auth.access_token) {
             return Promise.resolve(false)
         }
@@ -204,6 +216,7 @@ export class AppWindow {
                     this.goAuthSpotify()
                 } else {
                     this.syncAuth(body)
+                    intialize && this.initialize()
                 }
             })
             .catch(_e => {
@@ -217,14 +230,14 @@ export class AppWindow {
         this.setItem('SPOTIFY_AUTH', JSON.stringify(body))
     }
 
-    devSetup() {
-        const elemon = require('elemon')
-        elemon({
-            app: app,
-            mainFile: 'electron.js',
-            bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }],
-        })
-    }
+    // devSetup() {
+    //     const elemon = require('elemon')
+    //     elemon({
+    //         app: app,
+    //         mainFile: 'electron.js',
+    //         bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }],
+    //     })
+    // }
 
     setItem(item: string, value: string) {
         this.win.webContents.executeJavaScript(`localStorage.setItem('${item}','${value}')`)

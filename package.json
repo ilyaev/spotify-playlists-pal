@@ -11,7 +11,7 @@
     "server": "cd server && node server.js",
     "run": "electron ./app/main.js dev",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "dist": "yarn build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "app": "./dist/mac/Spotify\\ Tray\\ Pal.app/Contents/MacOS/Spotify\\ Tray\\ Pal"
   },

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { bem } from '../utils'
-import { SpotifyPlaylist, SpotifyEvents } from '../utils/types'
+import { SpotifyPlaylist, SpotifyEvents, SpotifyMe } from '../utils/types'
 import { ipcRenderer } from 'electron'
 import { ProgressCircle } from 'react-desktop/macOs'
 import { PageSettings } from './settings'
@@ -12,6 +12,7 @@ interface Props {}
 
 interface State {
     playlists: SpotifyPlaylist[]
+    me: SpotifyMe
     mode: string
 }
 
@@ -19,6 +20,7 @@ export class AppSpotify extends React.Component<Props, State> {
     state: State = {
         playlists: [],
         mode: 'index',
+        me: {} as SpotifyMe,
     }
 
     componentDidMount() {
@@ -35,6 +37,9 @@ export class AppSpotify extends React.Component<Props, State> {
             if (type === 'all') {
                 this.setState({ playlists: [...data] })
             }
+        })
+        ipcRenderer.on(SpotifyEvents.Me, (_event, data: SpotifyMe) => {
+            this.setState({ me: data })
         })
     }
 
@@ -70,7 +75,12 @@ export class AppSpotify extends React.Component<Props, State> {
         return (
             <div className={styles()}>
                 {this.state.mode === 'settings' && (
-                    <PageSettings onApply={this.onApplySettings.bind(this)} onCancel={this.onCancelSettings.bind(this)} />
+                    <PageSettings
+                        onApply={this.onApplySettings.bind(this)}
+                        onCancel={this.onCancelSettings.bind(this)}
+                        playlists={this.state.playlists}
+                        me={this.state.me}
+                    />
                 )}
                 {this.state.mode === 'SERVER_ERROR' && this.renderServerError()}
                 {this.state.mode === 'loading' && this.renderLoading()}

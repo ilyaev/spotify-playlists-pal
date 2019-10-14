@@ -10,6 +10,7 @@ import {
     SETTINGS_DEFAULTS,
     INSTANCE_ID_STORAGE_KEY,
     SPOTIFY_TOKEN_REFRESH_INTERVAL,
+    LOAD_LIST_PER_PAGE,
 } from '../utils/const'
 import {
     SpotifyAuth,
@@ -25,6 +26,7 @@ import {
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
 import { spotifyApi } from '../utils/api'
+import { normalizeSpotifyURI } from '../utils'
 import fetch from 'node-fetch'
 
 let INSTANCE_ID = 'atz'
@@ -107,15 +109,39 @@ export class AppWindow {
         })
     }
 
+    onSkip() {
+        spotifyApi.skipToNext()
+    }
+
+    async onAddToPlaylaylist(uri: string) {
+        const settings = JSON.parse(await this.getItem(SETTINGS_STORAGE_KEY)) as Settings
+        if (uri && settings.playlist) {
+            if (!(await this.playlists.isTrackInPlaylist(settings.playlist, uri))) {
+                await spotifyApi.addTracksToPlaylist(settings.playlist, [uri])
+            }
+        }
+    }
+
     async onLogout() {
         await this.setItem('SPOTIFY_AUTH', '')
         this.authSpotify()
+    }
+
+    async onTrayRefresh() {
+        return await this.syncPlaybackState()
+    }
+
+    async onShuffle(checked: boolean) {
+        return await spotifyApi.setShuffle({ state: checked })
     }
 
     onSettings() {
         this.win.show()
         if (this.win.webContents.getURL().indexOf('#settings') === -1) {
             this.goIndex({ hash: 'settings' })
+            setTimeout(() => {
+                this.win.webContents.send(SpotifyEvents.Me, this.me)
+            }, 500)
         }
     }
 
@@ -170,20 +196,30 @@ export class AppWindow {
             onPlaylistClick: this.onPlaylistClick.bind(this),
             onSettings: this.onSettings.bind(this),
             onLogout: this.onLogout.bind(this),
+            onShuffle: this.onShuffle.bind(this),
+            onRefresh: this.onTrayRefresh.bind(this),
+            onSkip: this.onSkip.bind(this),
+            onAddToPlaylist: this.onAddToPlaylaylist.bind(this),
         })
         this.tray.refresh()
     }
 
     async syncPlaybackState(touchFavorites: boolean = true) {
         this.playbackState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
+        if (this.playbackState.context && this.playbackState.context.uri) {
+            this.playbackState.originContextUri = '' + this.playbackState.context.uri
+            this.playbackState.context.uri = normalizeSpotifyURI(this.playbackState.context.uri)
+        }
         if (this.playbackState.is_playing && this.playbackState.context) {
-            this.playbackState.context.uri = this.playbackState.context.uri
-                .split(':')
-                .slice(-3)
-                .join(':')
-            this.saveFavorites(this.playlists.addFavorite(this.playbackState.context.uri))
+            this.saveFavorites(
+                this.playlists.addFavorite(
+                    this.playbackState.context.uri,
+                    this.tray.playbackState.context && this.tray.playbackState.context.uri === this.playbackState.context.uri ? 0 : 1
+                )
+            )
         }
         this.tray.syncState(this.playbackState)
+        return this.playbackState
     }
 
     async authSpotify() {
@@ -232,8 +268,9 @@ export class AppWindow {
 
     async generateInstanceId() {
         let id = await this.getItem(INSTANCE_ID_STORAGE_KEY)
-        if (!id) {
-            id = 'spotify-pal-' + Math.round(10000 + Math.random() * 100000)
+        const its = id.split('-s-')
+        if (!id || its.length === 1 || parseInt(its[1]) !== SPOTIFY_AUTH_SCOPE.length) {
+            id = 'spotify-pal-' + Math.round(10000 + Math.random() * 100000) + '-s-' + SPOTIFY_AUTH_SCOPE.length
             this.setItem(INSTANCE_ID_STORAGE_KEY, id)
         }
         return id

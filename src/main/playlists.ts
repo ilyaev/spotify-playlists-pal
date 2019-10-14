@@ -1,4 +1,6 @@
 import { SpotifyPlaylist, SpotifyFavoriteList, SpotifyRecentItem, SpotifyAlbum } from '../utils/types'
+import { LOAD_LIST_PER_PAGE } from '../utils/const'
+import { spotifyApi } from '../utils/api'
 
 const findByUri = (uri: string) => (item: { uri: string }) => (uri.indexOf(item.uri) !== -1 ? true : false)
 const appendArtistToAlbum = (one: SpotifyAlbum) =>
@@ -35,7 +37,7 @@ export class SpotifyPlaylists {
         this.sync([], [], [], [])
     }
 
-    addFavorite(uri: string) {
+    addFavorite(uri: string, increase: number = 1) {
         const itemIndex = this.all.findIndex(findByUri(uri))
         const albumIndex = this.recentAlbums.findIndex(findByUri(uri))
         const allAlbumIndex = this.albums.findIndex(findByUri(uri))
@@ -47,7 +49,7 @@ export class SpotifyPlaylists {
 
         if (favIndex >= 0) {
             this.favs[favIndex] = Object.assign({}, this.favs[favIndex], {
-                count: this.favs[favIndex].count + 1,
+                count: this.favs[favIndex].count + increase,
                 ts: new Date().toISOString(),
             })
         } else {
@@ -83,5 +85,34 @@ export class SpotifyPlaylists {
         const playlist = this.all.find(findByUri(uri)) || { name: '' }
         const album = this.albums.find(findByUri(uri)) || { name: '' }
         return playlist.name || album.name || 'Unknown'
+    }
+
+    async isTrackInPlaylist(playlistId: string, uri: string) {
+        try {
+            const meta = await spotifyApi.getPlaylistTracks(playlistId, { limit: 1, fields: 'total,limit' }).then(res => res.body)
+            const pages = Math.ceil(meta.total / LOAD_LIST_PER_PAGE)
+            const all = []
+            for (let i = 0; i < pages; i++) {
+                all.push(i)
+            }
+
+            const playlistTracks = (await Promise.all(
+                all.map(page =>
+                    spotifyApi
+                        .getPlaylistTracks(playlistId, {
+                            limit: LOAD_LIST_PER_PAGE,
+                            offset: page * LOAD_LIST_PER_PAGE,
+                            fields: 'items(track(uri))',
+                        })
+                        .then(r => r.body.items || [])
+                )
+            ))
+                .reduce((r, n) => r.concat(n), [])
+                .map(one => one.track.uri)
+
+            return playlistTracks.indexOf(uri) === -1 ? false : true
+        } catch (e) {
+            return true
+        }
     }
 }

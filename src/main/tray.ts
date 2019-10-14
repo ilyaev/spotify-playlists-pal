@@ -7,6 +7,10 @@ interface TrayOptions {
     onPlaylistClick: (list: SpotifyPlaylist) => void
     onSettings: () => void
     onLogout: () => void
+    onShuffle: (checked: boolean) => void
+    onRefresh: () => void
+    onSkip: () => void
+    onAddToPlaylist: (uri: string) => void
 }
 
 const orderItemsBy = order => (a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0)
@@ -29,71 +33,128 @@ export class AppTray {
         this.lists = lists
         this.settings = settings
         this.options = options || ({} as any)
+
         this.tray = new Tray(this.basename + TRAY_ICON_FILE)
-        this.tray.setToolTip('Splotify Tray Pal')
+
+        this.tray.setToolTip('Spotify Tray Pal')
+
+        this.tray.on('click', () => {
+            this.contextMenu && this.tray.popUpContextMenu(this.contextMenu)
+        })
+        this.tray.on('mouse-enter', () => {
+            this.options.onRefresh()
+        })
+
         this.playbackState = {
             context: {
                 uri: '',
             },
         } as any
+
         this.refresh()
+    }
+
+    getCurrentTrackCaption() {
+        let result = 'Nothing'
+        if (!this.playbackState.context || !this.playbackState.item) {
+            return result
+        }
+        const perc =
+            this.playbackState.item.duration_ms > 0
+                ? Math.round((this.playbackState.progress_ms / this.playbackState.item.duration_ms) * 100)
+                : '?'
+        result = `${this.playbackState.item.name} - ${this.playbackState.item.artists[0].name} - ${perc}% done`
+        return result
     }
 
     refresh() {
         this.contextMenu = Menu.buildFromTemplate(
-            this.buildMenuItems(this.lists.getFavPlaylists(parseInt(this.settings.max_size), this.settings.order_recent_playlist))
-                .concat([{ type: 'separator' }])
-                .concat([
-                    {
-                        label: 'All Playlists',
-                        submenu: Menu.buildFromTemplate(
-                            this.buildMenuItems([...this.lists.all].sort(orderItemsBy(this.settings.order_playlists)), 'normal')
-                        ),
-                    },
-                ] as MenuItemConstructorOptions[])
-                .concat([
-                    {
-                        label: 'All Albums',
-                        submenu: Menu.buildFromTemplate(
-                            this.buildMenuItems([...this.lists.albums].sort(orderItemsBy(this.settings.order_playlists)) as any[], 'normal')
-                        ),
-                    },
-                ])
-                .concat([
-                    {
-                        label: 'Recent Albums',
-                        submenu: Menu.buildFromTemplate(this.buildMenuItems(this.lists.recentAlbums as any[], 'normal')),
-                    },
-                ])
-                .concat([
-                    { type: 'separator' },
-                    {
-                        label: 'Settings',
-                        click: () => {
-                            this.options.onSettings && this.options.onSettings()
+            ([
+                { label: 'Playing: ' + this.getCurrentTrackCaption(), id: 'playing', type: 'normal', enabled: false },
+            ] as MenuItemConstructorOptions[]).concat(
+                this.buildMenuItems(this.lists.getFavPlaylists(parseInt(this.settings.max_size), this.settings.order_recent_playlist))
+                    .concat([{ type: 'separator' }])
+                    .concat([
+                        {
+                            label: 'All Playlists',
+                            submenu: Menu.buildFromTemplate(
+                                this.buildMenuItems([...this.lists.all].sort(orderItemsBy(this.settings.order_playlists)), 'normal')
+                            ),
                         },
-                    },
-                    { type: 'separator' },
-                    this.me && this.me.display_name
-                        ? {
-                              label: `Logout (${this.me.display_name})`,
-                              click: () => {
-                                  this.options.onLogout()
-                                  this.me = {} as any
-                                  this.lists.clear()
-                                  this.refresh()
-                              },
-                          }
-                        : { label: 'Login' },
-                    {
-                        label: 'Quit',
-                        click: () => {
-                            this.win.close()
+                    ] as MenuItemConstructorOptions[])
+                    .concat([
+                        {
+                            label: 'All Albums',
+                            submenu: Menu.buildFromTemplate(
+                                this.buildMenuItems(
+                                    [...this.lists.albums].sort(orderItemsBy(this.settings.order_playlists)) as any[],
+                                    'normal'
+                                )
+                            ),
                         },
-                    },
-                ])
+                    ])
+                    .concat([
+                        {
+                            label: 'Recent Albums',
+                            submenu: Menu.buildFromTemplate(this.buildMenuItems(this.lists.recentAlbums as any[], 'normal')),
+                        },
+                        {
+                            type: 'separator',
+                        },
+                        {
+                            label: 'Skip',
+                            click: () => this.options.onSkip(),
+                        },
+                        {
+                            label:
+                                this.playbackState && this.playbackState.item
+                                    ? `Add '${this.playbackState.item.name}' To Default Playlist`
+                                    : 'Add To Playlist',
+                            enabled: this.playbackState && this.playbackState.item ? true : false,
+                            click: () => this.options.onAddToPlaylist(this.playbackState.item ? this.playbackState.item.uri : ''),
+                        },
+                        {
+                            type: 'separator',
+                        },
+                        {
+                            label: 'Shuffle',
+                            type: 'checkbox',
+                            click: event => {
+                                this.options.onShuffle(event.checked || false)
+                            },
+                            checked: this.playbackState.shuffle_state ? true : false,
+                        },
+                    ])
+                    .concat([
+                        { type: 'separator' },
+                        {
+                            label: 'Settings',
+                            click: () => {
+                                this.options.onSettings && this.options.onSettings()
+                            },
+                        },
+                        { type: 'separator' },
+                        this.me && this.me.display_name
+                            ? {
+                                  label: `Logout (${this.me.display_name})`,
+                                  click: () => {
+                                      this.options.onLogout()
+                                      this.me = {} as any
+                                      this.lists.clear()
+                                      this.refresh()
+                                  },
+                              }
+                            : { label: 'Login' },
+                        {
+                            label: 'Quit',
+                            click: () => {
+                                this.win.close()
+                            },
+                        },
+                    ])
+            )
         )
-        this.tray.setContextMenu(this.contextMenu)
+        // this.tray.setContextMenu(this.contextMenu)
         this.tray.setToolTip(this.playbackState.context ? this.lists.getDisplayName(this.playbackState.context.uri) : 'Sptofiy is silent')
     }
 

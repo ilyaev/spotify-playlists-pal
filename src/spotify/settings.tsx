@@ -12,11 +12,14 @@ import {
     ProgressCircle,
 } from 'react-desktop/macOs'
 import { SETTINGS_STORAGE_KEY, SETTINGS_DEFAULTS } from '../utils/const'
-import { Settings } from '../utils/types'
+import { Settings, SpotifyPlaylist, SpotifyMe } from '../utils/types'
+import { throws } from 'assert'
 
 interface Props {
     onApply: () => void
     onCancel: () => void
+    playlists: SpotifyPlaylist[]
+    me: SpotifyMe
 }
 
 interface State extends Settings {
@@ -28,6 +31,7 @@ export class PageSettings extends React.Component<Props, State> {
     state: State = Object.assign({}, SETTINGS_DEFAULTS, {
         selected: 'settings',
         loaded: false,
+        me: { id: '-1' },
     })
 
     componentDidMount() {
@@ -75,10 +79,29 @@ export class PageSettings extends React.Component<Props, State> {
                 <TextInput
                     marginLeft={50}
                     marginTop={5}
-                    width={100}
+                    width={200}
                     value={this.state.max_size}
                     onChange={e => this.setState({ max_size: e.target.value })}
                 />
+                <Label marginTop={10}>Playlist to add playing tracks</Label>
+                <select
+                    style={{ height: '25px', width: '200px', marginLeft: '50px', marginTop: '5px', borderRadius: '0px!important' }}
+                    onChange={event => {
+                        this.setState({ playlist: event.target.value || '' })
+                    }}
+                >
+                    {[]
+                        .concat([{ owner: { id: this.props.me.id }, name: '-- Not Selected --', uri: '' }])
+                        .concat(this.props.playlists.filter(one => (one.owner.id === this.props.me.id ? true : false)))
+                        .map((one, index) => (
+                            <option
+                                value={one.id}
+                                key={'pl' + index}
+                                label={one.name}
+                                selected={one.id === this.state.playlist ? true : false}
+                            />
+                        ))}
+                </select>
                 <div style={{ paddingTop: '5px' }}>
                     <Checkbox
                         label={'Lunch at login'}
@@ -87,10 +110,10 @@ export class PageSettings extends React.Component<Props, State> {
                     />
                 </div>
                 <div style={{ display: 'flex', width: '100%', marginTop: '10px', justifyContent: 'center' }}>
-                    <Button color={'blue'} marginRight={10} onClick={this.onApply.bind(this)}>
+                    <Button color={'gray'} marginRight={10} onClick={this.onApply.bind(this)}>
                         Apply
                     </Button>
-                    <Button color={'blue'} onClick={() => this.props.onCancel()}>
+                    <Button color={'gray'} onClick={() => this.props.onCancel()}>
                         Cancel
                     </Button>
                 </div>

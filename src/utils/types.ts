@@ -5,6 +5,7 @@ export interface Settings {
     order_recent_playlist: string
     order_playlists: string
     lunch_at_login: boolean
+    playlist: string
 }
 
 export interface SpotifyArtist {
@@ -59,6 +60,11 @@ export interface SpotifyPlaylist {
     images: { url: string }[]
     tracks: { total: number; href: string }
     total_tracks: number
+    owner: {
+        id: string
+        uri: string
+        display_name: string
+    }
 }
 
 export interface SpotifyPlaybackState {
@@ -66,8 +72,18 @@ export interface SpotifyPlaybackState {
         type: string
         uri: string
     }
+    originContextUri: string
     is_playing: boolean
-    shuffle_state: 'off' | 'on'
+    shuffle_state: boolean
+    item: {
+        type: string
+        uri: string
+        name: string
+        preview_url: string
+        artists: SpotifyArtist[]
+        duration_ms: number
+        album: SpotifyAlbum
+    }
     device: {
         id: string
         is_active: boolean
@@ -92,6 +108,7 @@ export interface SpotifyAuth {
 }
 
 export enum SpotifyEvents {
+    Me = 'SPOTIFY-ME',
     List = 'SPOTIFY-LIST',
     State = 'SPOTIFY-STATE',
     Menu = 'SPOTIFY-SYNCMENU',

@@ -2,13 +2,12 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const nodeExternals = require('webpack-node-externals')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-module.exports = [
+module.exports = (env, args) => [
     {
-        mode: 'development',
+        mode: env === 'prod' ? 'production' : 'development',
         entry: './src/app.tsx',
         target: 'electron-renderer',
-        devtool: 'source-map',
-        // watch: true,
+        devtool: env === 'prod' ? undefined : 'source-map',
         resolve: {
             extensions: ['.ts', '.tsx', '.js'],
         },
@@ -36,10 +35,10 @@ module.exports = [
         ],
     },
     {
-        mode: 'development',
+        mode: env === 'prod' ? 'production' : 'development',
         entry: './src/main.ts',
         target: 'electron-main',
-        devtool: 'source-map',
+        devtool: env === 'prod' ? undefined : 'source-map',
         resolve: {
             extensions: ['.ts', '.js'],
         },

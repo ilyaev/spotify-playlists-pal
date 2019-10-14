@@ -31,6 +31,10 @@ export class SpotifyPlaylists {
         ).map(appendArtistToAlbum)
     }
 
+    clear() {
+        this.sync([], [], [], [])
+    }
+
     addFavorite(uri: string) {
         const itemIndex = this.all.findIndex(findByUri(uri))
         const albumIndex = this.recentAlbums.findIndex(findByUri(uri))

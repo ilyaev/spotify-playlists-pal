@@ -1,11 +1,12 @@
 import { app, Tray, MenuItem, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron'
 import { TRAY_ICON_FILE } from '../utils/const'
 import { SpotifyPlaylists } from './playlists'
-import { SpotifyPlaylist, SpotifyPlaybackState, Settings } from '../utils/types'
+import { SpotifyPlaylist, SpotifyPlaybackState, Settings, SpotifyMe } from '../utils/types'
 
 interface TrayOptions {
     onPlaylistClick: (list: SpotifyPlaylist) => void
     onSettings: () => void
+    onLogout: () => void
 }
 
 const orderItemsBy = order => (a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0)
@@ -19,10 +20,12 @@ export class AppTray {
     options: TrayOptions
     playbackState: SpotifyPlaybackState
     settings: Settings
+    me: SpotifyMe
 
-    constructor(win: BrowserWindow, lists: SpotifyPlaylists, settings: Settings, options?: TrayOptions) {
+    constructor(win: BrowserWindow, lists: SpotifyPlaylists, settings: Settings, me: SpotifyMe, options?: TrayOptions) {
         this.basename = app.getAppPath() + '/'
         this.win = win
+        this.me = me
         this.lists = lists
         this.settings = settings
         this.options = options || ({} as any)
@@ -71,6 +74,17 @@ export class AppTray {
                         },
                     },
                     { type: 'separator' },
+                    this.me && this.me.display_name
+                        ? {
+                              label: `Logout (${this.me.display_name})`,
+                              click: () => {
+                                  this.options.onLogout()
+                                  this.me = {} as any
+                                  this.lists.clear()
+                                  this.refresh()
+                              },
+                          }
+                        : { label: 'Login' },
                     {
                         label: 'Quit',
                         click: () => {

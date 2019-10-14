@@ -27,6 +27,10 @@ import fetch from 'node-fetch'
 
 let INSTANCE_ID = 'atz'
 
+interface AppOptions {
+    isDev: boolean
+}
+
 export class AppWindow {
     win: BrowserWindow
     basename: string
@@ -35,16 +39,21 @@ export class AppWindow {
     auth: SpotifyAuth
     me: SpotifyMe
     playbackState: SpotifyPlaybackState
+    options: AppOptions
 
-    constructor() {
+    constructor(options: AppOptions) {
+        this.options = options
         this.basename = app.getAppPath() + '/'
 
         this.win = new BrowserWindow({
             width: APP_WINDOW_WIDTH,
             height: APP_WINDOW_HEIGHT,
             skipTaskbar: true,
+            resizable: this.options.isDev,
+            maximizable: this.options.isDev,
+            minimizable: this.options.isDev,
             autoHideMenuBar: true,
-            show: false,
+            show: this.options.isDev ? true : false,
             webPreferences: {
                 nodeIntegration: true,
             },
@@ -56,7 +65,7 @@ export class AppWindow {
 
         this.playlists = new SpotifyPlaylists()
 
-        // this.devSetup()
+        this.options.isDev && this.devSetup()
 
         this.authSpotify()
     }
@@ -77,11 +86,16 @@ export class AppWindow {
         })
 
         this.win.on('close', event => {
-            if (this.win.isVisible() && this.tray) {
+            if (this.win.isVisible() && this.tray && !this.options.isDev) {
                 event.preventDefault()
                 this.win.hide()
             }
         })
+    }
+
+    async onLogout() {
+        await this.setItem('SPOTIFY_AUTH', '')
+        this.authSpotify()
     }
 
     onSettings() {
@@ -103,9 +117,9 @@ export class AppWindow {
     }
 
     async initialize() {
+        this.me = await spotifyApi.getMe().then(res => res.body)
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        this.me = await spotifyApi.getMe().then(res => res.body)
     }
 
     async loadPlaylists() {
@@ -130,15 +144,18 @@ export class AppWindow {
         this.playlists.sync(playlists, favorites, recent, albums)
         if (!this.tray) {
             this.initTray()
+        } else {
+            this.tray.me = this.me
         }
         this.win.webContents.send(SpotifyEvents.List, 'all', this.playlists.all)
     }
 
     async initTray() {
         const settingsRaw = (await this.getItem(SETTINGS_STORAGE_KEY)) || JSON.stringify(SETTINGS_DEFAULTS)
-        this.tray = new AppTray(this.win, this.playlists, JSON.parse(settingsRaw) as Settings, {
+        this.tray = new AppTray(this.win, this.playlists, JSON.parse(settingsRaw) as Settings, this.me, {
             onPlaylistClick: this.onPlaylistClick.bind(this),
             onSettings: this.onSettings.bind(this),
+            onLogout: this.onLogout.bind(this),
         })
         this.tray.refresh()
     }
@@ -149,7 +166,7 @@ export class AppWindow {
     }
 
     async authSpotify() {
-        this.goIndex({ hash: 'settings' })
+        this.goIndex({ hash: 'loading' })
         const authRaw = await this.getItem('SPOTIFY_AUTH')
         this.auth = JSON.parse(authRaw || JSON.stringify({ access_token: '' }))
 
@@ -180,7 +197,7 @@ export class AppWindow {
                         } else {
                             this.win.hide()
                             this.win.setSize(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
-                            this.goIndex()
+                            this.goIndex({ hash: 'settings' })
                             this.syncAuth(body)
                             this.initialize()
                         }
@@ -230,14 +247,14 @@ export class AppWindow {
         this.setItem('SPOTIFY_AUTH', JSON.stringify(body))
     }
 
-    // devSetup() {
-    //     const elemon = require('elemon')
-    //     elemon({
-    //         app: app,
-    //         mainFile: 'electron.js',
-    //         bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }],
-    //     })
-    // }
+    devSetup() {
+        const elemon = require('elemon')
+        elemon({
+            app: app,
+            mainFile: 'electron.js',
+            bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }],
+        })
+    }
 
     setItem(item: string, value: string) {
         this.win.webContents.executeJavaScript(`localStorage.setItem('${item}','${value}')`)

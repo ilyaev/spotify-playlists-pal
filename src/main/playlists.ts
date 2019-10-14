@@ -1,6 +1,6 @@
 import { SpotifyPlaylist, SpotifyFavoriteList, SpotifyRecentItem, SpotifyAlbum } from '../utils/types'
 
-const findByUri = (uri: string) => (item: { uri: string }) => (item.uri === uri ? true : false)
+const findByUri = (uri: string) => (item: { uri: string }) => (uri.indexOf(item.uri) !== -1 ? true : false)
 const appendArtistToAlbum = (one: SpotifyAlbum) =>
     Object.assign({}, one, { name: one.artists[0] ? one.name + ' - ' + one.artists[0].name : one.name })
 
@@ -15,7 +15,7 @@ export class SpotifyPlaylists {
     constructor() {}
 
     sync(lists: SpotifyPlaylist[], favorites: SpotifyFavoriteList[], recent: SpotifyRecentItem[], albums: SpotifyAlbum[]) {
-        this.all = [...lists] //.sort((a, b) => (a.name > b.name ? 1 : -1))
+        this.all = [...lists]
         this.favs = [...favorites]
         this.recent = [...recent]
         this.albums = albums.map(appendArtistToAlbum)
@@ -52,7 +52,7 @@ export class SpotifyPlaylists {
             })
         } else {
             this.favs = this.favs.slice(0, this.max_size - 1)
-            this.favs.push({ uri, count: 0, ts: new Date().toISOString() })
+            this.favs.push({ uri: uri, count: 0, ts: new Date().toISOString() })
         }
 
         this.favs = this.favs.sort((a, b) => (a.count > b.count ? -1 : 1))
@@ -70,8 +70,8 @@ export class SpotifyPlaylists {
         return [...this.favs]
             .sort((a, b) => (order === 'time_added' ? (a.ts > b.ts ? -1 : 1) : 0))
             .map(item => {
-                const playlist = list.find(one => one.uri === item.uri)
-                const album = this.recentAlbums.find(one => one.uri === item.uri) || this.albums.find(one => one.uri === item.uri)
+                const playlist = list.find(findByUri(item.uri))
+                const album = this.recentAlbums.find(findByUri(item.uri)) || this.albums.find(findByUri(item.uri))
                 return playlist || album || ({ name: 'NoName', uri: '' } as any)
             })
             .filter(one => (one.uri ? true : false))

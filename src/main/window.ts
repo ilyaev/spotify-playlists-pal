@@ -9,6 +9,7 @@ import {
     SETTINGS_STORAGE_KEY,
     SETTINGS_DEFAULTS,
     INSTANCE_ID_STORAGE_KEY,
+    SPOTIFY_TOKEN_REFRESH_INTERVAL,
 } from '../utils/const'
 import {
     SpotifyAuth,
@@ -19,6 +20,7 @@ import {
     SpotifyRecentItem,
     SpotifyAlbum,
     Settings,
+    SpotifyFavoriteList,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
@@ -40,6 +42,7 @@ export class AppWindow {
     me: SpotifyMe
     playbackState: SpotifyPlaybackState
     options: AppOptions
+    refreshId: any
 
     constructor(options: AppOptions) {
         this.options = options
@@ -63,11 +66,22 @@ export class AppWindow {
 
         this.listenToRedirects()
 
+        this.setupTokenAutoRefresh()
+
         this.playlists = new SpotifyPlaylists()
 
         this.options.isDev && this.devSetup()
 
         this.authSpotify()
+    }
+
+    setupTokenAutoRefresh() {
+        this.refreshId = setTimeout(async () => {
+            if (this.auth.access_token) {
+                await this.refreshToken()
+            }
+            this.setupTokenAutoRefresh()
+        }, SPOTIFY_TOKEN_REFRESH_INTERVAL)
     }
 
     listenToEvents() {
@@ -106,7 +120,7 @@ export class AppWindow {
     }
 
     onPlaylistClick(list: SpotifyPlaylist) {
-        this.setItem('SPOTIFY_FAVORITES', JSON.stringify(this.playlists.addFavorite(list.uri)))
+        this.saveFavorites(this.playlists.addFavorite(list.uri))
 
         this.tray.syncCurrentUri(list.uri)
         this.tray.refresh()
@@ -160,8 +174,15 @@ export class AppWindow {
         this.tray.refresh()
     }
 
-    async syncPlaybackState() {
+    async syncPlaybackState(touchFavorites: boolean = true) {
         this.playbackState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
+        if (this.playbackState.is_playing && this.playbackState.context) {
+            this.playbackState.context.uri = this.playbackState.context.uri
+                .split(':')
+                .slice(-3)
+                .join(':')
+            this.saveFavorites(this.playlists.addFavorite(this.playbackState.context.uri))
+        }
         this.tray.syncState(this.playbackState)
     }
 
@@ -262,5 +283,9 @@ export class AppWindow {
 
     getItem(item: string) {
         return this.win.webContents.executeJavaScript(`localStorage.getItem('${item}')`)
+    }
+
+    saveFavorites(favs: SpotifyFavoriteList[]) {
+        this.setItem('SPOTIFY_FAVORITES', JSON.stringify(favs))
     }
 }

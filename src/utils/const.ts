@@ -25,4 +25,6 @@ export const SETTINGS_DEFAULTS: Settings = {
     lunch_at_login: true,
 }
 
+export const SPOTIFY_TOKEN_REFRESH_INTERVAL = 1000 * 60 * 50
+
 export { SPOTIFY_TOKEN_SERVER } from '../env'

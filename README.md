@@ -1,4 +1,4 @@
-# spotify-desktop-companion
+# Spotify Desktop Companion
 
 Tray application to quickly switch between spotify lists
 
@@ -12,19 +12,19 @@ Setup spotify Auth server somewhere. You can use one in `server` folder and use 
 
 # Install dependencies
 
-`yarn` or `npm i`
+- `yarn` or `npm i`
 
 # Build
 
-`yarn build` or `npm run build` - build
-`yarn dev` or `npm run dev` - build&watch
+- `yarn build` or `npm run build` - build
+- `yarn dev` or `npm run dev` - build&watch
 
 # Run
 
-`yarn start` or `npm run start`
-`yarn run run` or `npm run run` - run in DEV mode
+- `yarn start` or `npm run start`
+- `yarn run run` or `npm run run` - run in DEV mode
 
 # Release
 
-`yarn dist` or `npm run dist` - build MacOS dmg (see `dist` folder)
-`yarn app` or `npm run app` - start MacOS app from dmg
+- `yarn dist` or `npm run dist` - build MacOS dmg (see `dist` folder)
+- `yarn app` or `npm run app` - start MacOS app from dmg

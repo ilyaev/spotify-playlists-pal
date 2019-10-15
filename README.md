@@ -3,7 +3,7 @@
 Tray application to quickly switch between spotify lists
 
 ![Screenshot](/screenshot.jpg 'Screenshot')
-![Settings](/screenshot_settings.jpg 'Settings')
+<img src="screenshot_settings.jpg" width="400"/>
 
 # Config
 

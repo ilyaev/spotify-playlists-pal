@@ -3,6 +3,8 @@ import { LOAD_LIST_PER_PAGE } from '../utils/const'
 import { spotifyApi } from '../utils/api'
 
 const findByUri = (uri: string) => (item: { uri: string }) => (uri.indexOf(item.uri) !== -1 ? true : false)
+const findById = (id: string) => (item: { id: string }) => (id.indexOf(item.id) !== -1 ? true : false)
+
 const appendArtistToAlbum = (one: SpotifyAlbum) =>
     Object.assign({}, one, { name: one.artists[0] ? one.name + ' - ' + one.artists[0].name : one.name })
 
@@ -79,6 +81,11 @@ export class SpotifyPlaylists {
             .filter(one => (one.uri ? true : false))
             .slice(0, max_size)
             .sort((a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0))
+    }
+
+    getDisplayNameById(id: string) {
+        const playlist = this.all.find(findById(id)) || { name: '' }
+        return playlist.name || 'Unknown'
     }
 
     getDisplayName(uri: string) {

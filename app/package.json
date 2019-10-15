@@ -1,12 +1,13 @@
 {
-  "name": "pbartz.electron.spotify.traypal",
+  "name": "pbartz.electron.spotify.companion",
   "version": "1.0.0",
-  "description": "Spotify Playlists Tray Pal",
+  "description": "Spotify Companion",
   "main": "main.js",
   "author": "Yura Ilyaev<ilyaev@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "spotify-web-api-node": "^4.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "spotify-node-applescript": "^1.1.1",
+    "spotify-web-api-node": "^4.0.0"
   }
 }

@@ -13,7 +13,6 @@ import {
 } from 'react-desktop/macOs'
 import { SETTINGS_STORAGE_KEY, SETTINGS_DEFAULTS } from '../utils/const'
 import { Settings, SpotifyPlaylist, SpotifyMe } from '../utils/types'
-import { throws } from 'assert'
 
 interface Props {
     onApply: () => void

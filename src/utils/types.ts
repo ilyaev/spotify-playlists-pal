@@ -1,5 +1,3 @@
-export const INSTANCE_ID = 'atz'
-
 export interface Settings {
     max_size: string
     order_recent_playlist: string

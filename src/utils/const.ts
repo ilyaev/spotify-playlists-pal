@@ -6,7 +6,7 @@ export const SETTINGS_STORAGE_KEY = 'SPOTIFY-SETTINGS'
 export const INSTANCE_ID_STORAGE_KEY = 'SPOTIFY-INSTANCE-ID'
 export const TRAY_ICON_FILE = 'static/play-icon-small.png'
 export const SPOTIFY_CALLBACK_URL = 'http://127.0.0.1/'
-export const LOAD_LIST_PER_PAGE = 1
+export const LOAD_LIST_PER_PAGE = 100
 export const SPOTIFY_AUTH_SCOPE = [
     'user-read-private',
     'user-read-email',

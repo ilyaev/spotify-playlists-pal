@@ -2,7 +2,7 @@ import * as React from 'react'
 import { bem } from '../utils'
 import { SpotifyPlaylist, SpotifyEvents, SpotifyMe } from '../utils/types'
 import { ipcRenderer } from 'electron'
-import { ProgressCircle } from 'react-desktop/macOs'
+import { ProgressCircle, View } from 'react-desktop/macOs'
 import { PageSettings } from './settings'
 
 const styles = bem('spotify')
@@ -57,9 +57,9 @@ export class AppSpotify extends React.Component<Props, State> {
 
     renderLoading() {
         return (
-            <div style={{ padding: '50px', justifyContent: 'center' }}>
+            <View padding="20px" horizontalAlignment="center" verticalAlignment="center" height={'355px'}>
                 <ProgressCircle size={25} />
-            </div>
+            </View>
         )
     }
 

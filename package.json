@@ -1,11 +1,11 @@
 {
-  "name": "pbartz.electron.spotify.traypal",
+  "name": "pbartz.electron.spotify.companion",
   "version": "1.0.0",
-  "description": "Spotify Playlists Tray Pal",
+  "description": "Spotify Companion",
   "main": "app/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm ./app/*.map && webpack --config ./webpack.config.js --env prod",
+    "build": "touch ./app/chump.map && rm ./app/*.map && webpack --config ./webpack.config.js --env prod",
     "dev": "webpack --config ./webpack.config.js --watch --env dev",
     "start": "electron ./app/main.js",
     "server": "cd server && node server.js",
@@ -13,11 +13,11 @@
     "pack": "electron-builder --dir",
     "dist": "yarn build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
-    "app": "./dist/mac/Spotify\\ Tray\\ Pal.app/Contents/MacOS/Spotify\\ Tray\\ Pal"
+    "app": "./dist/mac/Spotify\\ Companion.app/Contents/MacOS/Spotify\\ Companion"
   },
   "build": {
-    "appId": "pbartz.electron.spotify.traypal",
-    "productName": "Spotify Tray Pal",
+    "appId": "pbartz.electron.spotify.companion",
+    "productName": "Spotify Companion",
     "files": [
       "**/*",
       "app/static/*",
@@ -61,6 +61,7 @@
     "elemon": "^5.0.3",
     "express": "^4.17.1",
     "konva": "^4.0.12",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "spotify-node-applescript": "^1.1.1"
   }
 }

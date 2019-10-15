@@ -13,7 +13,7 @@ interface TrayOptions {
     onAddToPlaylist: (uri: string) => void
 }
 
-const orderItemsBy = order => (a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0)
+const orderItemsBy = (order: string) => (a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0)
 
 export class AppTray {
     tray: Tray
@@ -71,6 +71,7 @@ export class AppTray {
         this.contextMenu = Menu.buildFromTemplate(
             ([
                 { label: 'Playing: ' + this.getCurrentTrackCaption(), id: 'playing', type: 'normal', enabled: false },
+                { type: 'separator' },
             ] as MenuItemConstructorOptions[]).concat(
                 this.buildMenuItems(this.lists.getFavPlaylists(parseInt(this.settings.max_size), this.settings.order_recent_playlist))
                     .concat([{ type: 'separator' }])
@@ -107,10 +108,10 @@ export class AppTray {
                         },
                         {
                             label:
-                                this.playbackState && this.playbackState.item
-                                    ? `Add '${this.playbackState.item.name}' To Default Playlist`
+                                this.playbackState && this.playbackState.item && this.settings.playlist
+                                    ? `Add '${this.playbackState.item.name}' To '${this.lists.getDisplayNameById(this.settings.playlist)}'`
                                     : 'Add To Playlist',
-                            enabled: this.playbackState && this.playbackState.item ? true : false,
+                            enabled: this.playbackState && this.playbackState.item && this.settings.playlist ? true : false,
                             click: () => this.options.onAddToPlaylist(this.playbackState.item ? this.playbackState.item.uri : ''),
                         },
                         {

@@ -10,7 +10,6 @@ import {
     SETTINGS_DEFAULTS,
     INSTANCE_ID_STORAGE_KEY,
     SPOTIFY_TOKEN_REFRESH_INTERVAL,
-    LOAD_LIST_PER_PAGE,
 } from '../utils/const'
 import {
     SpotifyAuth,
@@ -25,7 +24,7 @@ import {
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
-import { spotifyApi } from '../utils/api'
+import { spotifyApi, spotifyMac } from '../utils/api'
 import { normalizeSpotifyURI } from '../utils'
 import fetch from 'node-fetch'
 
@@ -64,15 +63,15 @@ export class AppWindow {
             },
         })
 
+        this.playlists = new SpotifyPlaylists()
+
         this.listenToEvents()
 
         this.listenToRedirects()
 
         this.setupTokenAutoRefresh()
 
-        this.playlists = new SpotifyPlaylists()
-
-        this.options.isDev && this.devSetup()
+        this.devSetup()
 
         this.authSpotify()
     }
@@ -145,15 +144,19 @@ export class AppWindow {
         }
     }
 
-    onPlaylistClick(list: SpotifyPlaylist) {
+    async onPlaylistClick(list: SpotifyPlaylist) {
         this.saveFavorites(this.playlists.addFavorite(list.uri))
 
         this.tray.syncCurrentUri(list.uri)
         this.tray.refresh()
 
-        spotifyApi.play({
-            context_uri: list.uri,
-        })
+        if (!this.playbackState.context) {
+            spotifyMac.playTrack(list.uri)
+        } else {
+            spotifyApi.play({
+                context_uri: list.uri,
+            })
+        }
     }
 
     async initialize() {
@@ -204,7 +207,7 @@ export class AppWindow {
         this.tray.refresh()
     }
 
-    async syncPlaybackState(touchFavorites: boolean = true) {
+    async syncPlaybackState() {
         this.playbackState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
         if (this.playbackState.context && this.playbackState.context.uri) {
             this.playbackState.originContextUri = '' + this.playbackState.context.uri
@@ -267,7 +270,7 @@ export class AppWindow {
     }
 
     async generateInstanceId() {
-        let id = await this.getItem(INSTANCE_ID_STORAGE_KEY)
+        let id = (await this.getItem(INSTANCE_ID_STORAGE_KEY)) || ''
         const its = id.split('-s-')
         if (!id || its.length === 1 || parseInt(its[1]) !== SPOTIFY_AUTH_SCOPE.length) {
             id = 'spotify-pal-' + Math.round(10000 + Math.random() * 100000) + '-s-' + SPOTIFY_AUTH_SCOPE.length
@@ -306,6 +309,9 @@ export class AppWindow {
     }
 
     devSetup() {
+        if (!this.options.isDev) {
+            return
+        }
         const elemon = require('elemon')
         elemon({
             app: app,

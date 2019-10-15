@@ -45,3 +45,5 @@ yarn-error.log*
 src/env.ts
 
 server/server.env.js
+server/server.env.js
+src/env.ts

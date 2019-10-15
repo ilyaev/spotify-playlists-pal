@@ -1,0 +1,17 @@
+{
+  "name": "pbartz.nodejs.spotify.auth.server",
+  "version": "1.0.0",
+  "description": "Spotify Auth Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Yura Ilyaev<ilyaev@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "spotify-web-api-node": "^4.0.0",
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.0"
+  }
+}

@@ -2,29 +2,27 @@ const express = require('express')
 const app = express()
 const port = 3002
 const env = require('./server.env.js')
+const SpotifyWebApi = require('spotify-web-api-node')
 
-let SpotifyWebApi = require('spotify-web-api-node')
-let spotifyApi = new SpotifyWebApi({
+const spotifyApi = new SpotifyWebApi({
     clientId: env.clientId,
     redirectUri: env.redirectUrl,
-    clientSecret: env.clientSecret
+    clientSecret: env.clientSecret,
 })
 
 const dbClass = () => {
     const data = {}
     return {
-        setItem: (item, d) => {
+        storeItem: (item, d) => {
             data[item] = d
         },
-        getItem: item => {
+        loadItem: item => {
             return data[item] || {}
-        }
+        },
     }
 }
 
 const db = dbClass()
-
-app.get('/', (req, res) => res.send('Hello World!'))
 
 app.get('/auth', (req, res) => {
     const code = req.query && req.query.code ? req.query.code : ''
@@ -32,14 +30,14 @@ app.get('/auth', (req, res) => {
     if (!id || !code) {
         res.json({
             success: false,
-            message: 'Not enought parameters'
+            message: 'Not enought parameters',
         })
         return
     }
     spotifyApi
         .authorizationCodeGrant(code)
         .then(response => {
-            db.setItem(id, response.body)
+            db.storeItem(id, response.body)
             res.json(Object.assign({ success: true }, response.body))
         })
         .catch(e => {
@@ -52,11 +50,11 @@ app.get('/token', (req, res) => {
     if (!id) {
         res.json({
             success: false,
-            message: 'Not enought parameters'
+            message: 'Not enough parameters',
         })
         return
     }
-    const item = Object.assign({}, db.getItem(id))
+    const item = Object.assign({}, db.loadItem(id))
     item.success = item.access_token ? true : false
     res.json(item)
 })
@@ -66,11 +64,11 @@ app.get('/refresh', (req, res) => {
     if (!id) {
         res.json({
             success: false,
-            message: 'Not enough parameters'
+            message: 'Not enough parameters',
         })
         return
     }
-    const item = Object.assign({}, db.getItem(id))
+    const item = Object.assign({}, db.loadItem(id))
     spotifyApi.setRefreshToken(item.refresh_token)
     spotifyApi
         .refreshAccessToken()
@@ -82,6 +80,6 @@ app.get('/refresh', (req, res) => {
         })
 })
 
-app.listen(port, () => console.log(`Spotify Auth Server lstening on port ${port}!`))
+app.listen(port, () => console.log(`Spotify Auth Server listening on port ${port}!`))
 
 //

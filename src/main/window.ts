@@ -184,12 +184,15 @@ export class AppWindow {
         const db = (await this.getItem('SPOTIFY_FAVORITES')) || '[]'
 
         const favorites = JSON.parse(db) as any[]
+
         this.playlists.sync(playlists, favorites, recent, albums)
+
         if (!this.tray) {
             this.initTray()
         } else {
             this.tray.me = this.me
         }
+
         this.win.webContents.send(SpotifyEvents.List, 'all', this.playlists.all)
     }
 
@@ -315,7 +318,7 @@ export class AppWindow {
         const elemon = require('elemon')
         elemon({
             app: app,
-            mainFile: 'electron.js',
+            mainFile: 'main.js',
             bws: [{ bw: this.win, res: ['bundle.js', 'index.html'] }],
         })
     }

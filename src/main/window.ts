@@ -32,6 +32,7 @@ let INSTANCE_ID = 'atz'
 
 interface AppOptions {
     isDev: boolean
+    onChangeSettings: (settings: Settings) => void
 }
 
 export class AppWindow {
@@ -93,6 +94,7 @@ export class AppWindow {
         ipcMain.on(SpotifyEvents.ApplySettings, async _event => {
             const settings = JSON.parse(await this.getItem(SETTINGS_STORAGE_KEY)) as Settings
             this.tray.applySettings(settings)
+            this.options.onChangeSettings(settings)
             this.win.hide()
         })
 
@@ -198,7 +200,9 @@ export class AppWindow {
 
     async initTray() {
         const settingsRaw = (await this.getItem(SETTINGS_STORAGE_KEY)) || JSON.stringify(SETTINGS_DEFAULTS)
-        this.tray = new AppTray(this.win, this.playlists, JSON.parse(settingsRaw) as Settings, this.me, {
+        const settings = JSON.parse(settingsRaw) as Settings
+        this.options.onChangeSettings(settings)
+        this.tray = new AppTray(this.win, this.playlists, settings, this.me, {
             onPlaylistClick: this.onPlaylistClick.bind(this),
             onSettings: this.onSettings.bind(this),
             onLogout: this.onLogout.bind(this),

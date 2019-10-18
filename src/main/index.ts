@@ -27,7 +27,6 @@ import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
 import { spotifyApi, spotifyMac } from '../utils/api'
 import { normalizeSpotifyURI, waitForTime } from '../utils'
-import { MiniPlayerWindow } from './player'
 import { AppBrowserWindow } from './browser/index'
 import fetch from 'node-fetch'
 
@@ -48,7 +47,6 @@ export class AppWindow {
     playbackState: SpotifyPlaybackState
     options: AppOptions
     refreshId: any
-    player: MiniPlayerWindow
 
     constructor(options: AppOptions) {
         this.options = options
@@ -58,7 +56,6 @@ export class AppWindow {
             onWillRedirect: this.onWillRedirect.bind(this),
         })
 
-        this.player = new MiniPlayerWindow()
         this.playlists = new SpotifyPlaylists()
 
         this.listenToEvents()
@@ -74,7 +71,7 @@ export class AppWindow {
         await this.loadMe()
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        this.goIndex({ hash: 'settings' })
+        this.goSettings()
     }
 
     listenToEvents() {
@@ -108,7 +105,7 @@ export class AppWindow {
     }
 
     async authSpotify() {
-        this.goIndex({ hash: 'loading' })
+        this.goSettings()
         const authRaw = await this.loadItem('SPOTIFY_AUTH')
         this.auth = JSON.parse(authRaw || JSON.stringify({ access_token: '' }))
         if (this.auth.access_token) {
@@ -137,7 +134,7 @@ export class AppWindow {
                 }
             })
             .catch(_e => {
-                this.goIndex({ hash: 'SERVER_ERROR' })
+                this.goSettings({ hash: 'SERVER_ERROR' })
             })
     }
 
@@ -149,17 +146,17 @@ export class AppWindow {
                 .then(res => res.json())
                 .then(body => {
                     if (!body.success) {
-                        this.goIndex({ hash: 'SERVER_ERROR' })
+                        this.goSettings({ hash: 'SERVER_ERROR' })
                     } else {
                         this.browser.win.hide()
                         this.browser.win.setSize(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
-                        this.goIndex({ hash: 'settings' })
+                        this.goSettings()
                         this.syncAuth(body)
                         this.initialize()
                     }
                 })
                 .catch(_e => {
-                    this.goIndex({ hash: 'SERVER_ERROR' })
+                    this.goSettings({ hash: 'SERVER_ERROR' })
                 })
         }
     }
@@ -198,10 +195,6 @@ export class AppWindow {
 
     async onShuffle(checked: boolean) {
         return await spotifyApi.setShuffle({ state: checked })
-    }
-
-    onSettings() {
-        this.goIndex({ hash: 'settings' })
     }
 
     async onPlaylistClick(list: SpotifyPlaylist) {
@@ -260,10 +253,12 @@ export class AppWindow {
     async initTray() {
         const settingsRaw = (await this.loadItem(SETTINGS_STORAGE_KEY)) || JSON.stringify(SETTINGS_DEFAULTS)
         const settings = JSON.parse(settingsRaw) as Settings
+
         this.options.onChangeSettings(settings)
+
         this.tray = new AppTray(this.playlists, settings, this.me, {
             onPlaylistClick: this.onPlaylistClick.bind(this),
-            onSettings: this.onSettings.bind(this),
+            onSettings: this.goSettings.bind(this),
             onLogout: this.onLogout.bind(this),
             onShuffle: this.onShuffle.bind(this),
             onRefresh: this.onTrayRefresh.bind(this),
@@ -273,6 +268,7 @@ export class AppWindow {
             onLeftClick: () => this.browser.hide(),
             onQuit: () => this.browser.closeAll(),
         })
+
         this.tray.refresh()
         this.browser.tray = this.tray
     }
@@ -305,7 +301,7 @@ export class AppWindow {
         return id
     }
 
-    goIndex(options: LoadFileOptions = {}) {
+    goSettings(options: LoadFileOptions = { hash: 'settings' }) {
         this.browser.setState(BrowserState.Settings)
         this.browser.loadFile('index.html', options)
     }

@@ -85,20 +85,16 @@ export class PageSettings extends React.Component<Props, State> {
                 <Label marginTop={10}>Playlist to add playing tracks</Label>
                 <select
                     style={{ height: '25px', width: '200px', marginLeft: '50px', marginTop: '5px', borderRadius: '0px!important' }}
+                    value={this.state.playlist || ''}
                     onChange={event => {
                         this.setState({ playlist: event.target.value || '' })
                     }}
                 >
                     {[]
-                        .concat([{ owner: { id: this.props.me.id }, name: '-- Not Selected --', uri: '' }])
+                        .concat([{ owner: { id: this.props.me.id }, name: '-- Not Selected --', uri: '', id: '' }])
                         .concat(this.props.playlists.filter(one => (one.owner.id === this.props.me.id ? true : false)))
                         .map((one, index) => (
-                            <option
-                                value={one.id}
-                                key={'pl' + index}
-                                label={one.name}
-                                selected={one.id === this.state.playlist ? true : false}
-                            />
+                            <option value={one.id} key={'pl' + index} label={one.name} />
                         ))}
                 </select>
                 <div style={{ paddingTop: '5px' }}>

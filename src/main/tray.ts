@@ -1,4 +1,4 @@
-import { app, Tray, MenuItem, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron'
+import { app, Tray, MenuItem, Menu, BrowserWindow, MenuItemConstructorOptions, Rectangle } from 'electron'
 import { TRAY_ICON_FILE } from '../utils/const'
 import { SpotifyPlaylists } from './playlists'
 import { SpotifyPlaylist, SpotifyPlaybackState, Settings, SpotifyMe } from '../utils/types'
@@ -11,6 +11,9 @@ interface TrayOptions {
     onRefresh: () => void
     onSkip: () => void
     onAddToPlaylist: (uri: string) => void
+    onRightClick: (bounds: Rectangle) => void
+    onLeftClick: () => void
+    onQuit: () => void
 }
 
 const orderItemsBy = (order: string) => (a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0)
@@ -18,17 +21,16 @@ const orderItemsBy = (order: string) => (a, b) => (order === 'name' ? (a.name > 
 export class AppTray {
     tray: Tray
     basename: string
-    win: BrowserWindow
     lists: SpotifyPlaylists
     contextMenu: Menu
     options: TrayOptions
     playbackState: SpotifyPlaybackState
     settings: Settings
     me: SpotifyMe
+    mouseOver: boolean
 
-    constructor(win: BrowserWindow, lists: SpotifyPlaylists, settings: Settings, me: SpotifyMe, options?: TrayOptions) {
+    constructor(lists: SpotifyPlaylists, settings: Settings, me: SpotifyMe, options?: TrayOptions) {
         this.basename = app.getAppPath() + '/'
-        this.win = win
         this.me = me
         this.lists = lists
         this.settings = settings
@@ -38,11 +40,22 @@ export class AppTray {
 
         this.tray.setToolTip('Spotify Tray Pal')
 
-        this.tray.on('click', () => {
+        this.tray.on('click', (_event, _bounds, _position) => {
+            this.options.onLeftClick()
             this.contextMenu && this.tray.popUpContextMenu(this.contextMenu)
         })
+
+        this.tray.on('right-click', (_event, bounds) => {
+            this.options.onRightClick(bounds)
+        })
+
         this.tray.on('mouse-enter', () => {
             this.options.onRefresh()
+            this.mouseOver = true
+        })
+
+        this.tray.on('mouse-leave', (a, b) => {
+            this.mouseOver = false
         })
 
         this.playbackState = {
@@ -147,9 +160,9 @@ export class AppTray {
                               }
                             : { label: 'Login' },
                         {
-                            label: 'Quit',
+                            label: 'Quit Spotify Desktop Companion',
                             click: () => {
-                                this.win.close()
+                                this.options.onQuit()
                             },
                         },
                     ])

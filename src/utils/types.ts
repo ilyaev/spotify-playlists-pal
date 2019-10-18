@@ -1,3 +1,6 @@
+import { BrowserWindowConstructorOptions, BrowserWindow } from 'electron'
+import { AppTray } from '../main/tray'
+
 export interface Settings {
     max_size: string
     order_recent_playlist: string
@@ -113,6 +116,27 @@ export enum SpotifyEvents {
     Play = 'SPOTIFY-PLAY',
     Settings = 'SPOTIFY-SETTINGS',
     SendList = 'SPOTIFY-SEND-LIST',
+    SendState = 'SPOTIFY-SEND-STATE',
+    SendMe = 'SPOTIFY-SEND-ME',
     ApplySettings = 'SPOTIFY-APPLY-SETTINGS',
     CancelSettings = 'SPOTIFY-CANCEL-SETTINGS',
+}
+
+export enum BrowserState {
+    Settings = 'settings',
+    Player = 'player',
+    Index = 'index',
+}
+
+export interface AppBrowserOptions {
+    position?: { x: number; y: number }
+}
+
+export interface AppBrowserState {
+    stateId: string
+    config: BrowserWindowConstructorOptions
+    win: BrowserWindow
+    onExit: () => void
+    onEnter: (options?: AppBrowserOptions) => void
+    auth: (url: string) => void
 }

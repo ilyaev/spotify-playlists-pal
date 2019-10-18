@@ -8,3 +8,5 @@ export const normalizeSpotifyURI = (uri: string) =>
         .slice(-3)
         .map((one, index) => (index === 0 ? 'spotify' : one))
         .join(':')
+
+export const waitForTime = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

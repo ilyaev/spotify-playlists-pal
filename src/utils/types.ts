@@ -1,4 +1,4 @@
-import { BrowserWindowConstructorOptions, BrowserWindow } from 'electron'
+import { BrowserWindowConstructorOptions, BrowserWindow, LoadFileOptions } from 'electron'
 import { AppTray } from '../main/tray'
 
 export interface Settings {
@@ -114,6 +114,9 @@ export enum SpotifyEvents {
     State = 'SPOTIFY-STATE',
     Menu = 'SPOTIFY-SYNCMENU',
     Play = 'SPOTIFY-PLAY',
+    Next = 'SPOTIFY-NEXT',
+    Prev = 'SPOTIFT-PREV',
+    Pause = 'SPOTIFY-PAUSE',
     Settings = 'SPOTIFY-SETTINGS',
     SendList = 'SPOTIFY-SEND-LIST',
     SendState = 'SPOTIFY-SEND-STATE',
@@ -128,7 +131,14 @@ export enum BrowserState {
     Index = 'index',
 }
 
-export interface AppBrowserOptions {
+export enum PlayerAction {
+    Play = 'PLAYER-PLAY',
+    Next = 'PLAYER-NEXT',
+    Prev = 'PLAYER-PREV',
+    Pause = 'PLAYER-PAUSE',
+}
+
+export interface AppBrowserOptions extends LoadFileOptions {
     position?: { x: number; y: number }
 }
 
@@ -137,6 +147,6 @@ export interface AppBrowserState {
     config: BrowserWindowConstructorOptions
     win: BrowserWindow
     onExit: () => void
-    onEnter: (options?: AppBrowserOptions) => void
+    onEnter: (options?: AppBrowserOptions, refresh?: true) => void
     auth: (url: string) => void
 }

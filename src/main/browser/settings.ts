@@ -1,5 +1,5 @@
-import { AppBrowserState, BrowserState } from '../../utils/types'
-import { BrowserWindow, BrowserViewConstructorOptions, BrowserWindowConstructorOptions } from 'electron'
+import { AppBrowserState, BrowserState, AppBrowserOptions } from '../../utils/types'
+import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import { APP_WINDOW_HEIGHT, APP_WINDOW_WIDTH } from '../../utils/const'
 
 import { isDev } from '../../main'
@@ -35,9 +35,10 @@ export class AppBrowserStateSettings implements AppBrowserState {
         this.win.hide()
     }
 
-    onEnter() {
-        this.browser.loadFile('index.html', { hash: 'settings' })
+    onEnter(options: AppBrowserOptions = { hash: '' }) {
+        this.browser.loadFile('index.html', { hash: options!.hash || BrowserState.Settings })
         this.win.show()
+        isDev && this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
     }
 
     auth(url: string) {

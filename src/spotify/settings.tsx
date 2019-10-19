@@ -12,7 +12,7 @@ import {
     ProgressCircle,
 } from 'react-desktop/macOs'
 import { SETTINGS_STORAGE_KEY, SETTINGS_DEFAULTS } from '../utils/const'
-import { Settings, SpotifyPlaylist, SpotifyMe } from '../utils/types'
+import { Settings, SpotifyPlaylist, SpotifyMe, BrowserState } from '../utils/types'
 
 interface Props {
     onApply: () => void
@@ -28,7 +28,7 @@ interface State extends Settings {
 
 export class PageSettings extends React.Component<Props, State> {
     state: State = Object.assign({}, SETTINGS_DEFAULTS, {
-        selected: 'settings',
+        selected: BrowserState.Settings,
         loaded: false,
         me: { id: '-1' },
     })
@@ -41,7 +41,7 @@ export class PageSettings extends React.Component<Props, State> {
     render() {
         return (
             <SegmentedControl box margin={'10px'}>
-                {['settings', 'stats', 'about'].map(key => {
+                {[BrowserState.Settings, 'stats', 'about'].map(key => {
                     return (
                         <SegmentedControlItem
                             key={key}
@@ -142,7 +142,7 @@ export class PageSettings extends React.Component<Props, State> {
 
     renderTab(key: string) {
         switch (key) {
-            case 'settings':
+            case BrowserState.Settings:
                 return this.renderSettings()
             default:
                 return <Text>{key}</Text>

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { bem } from '../utils'
-import { SpotifyPlaylist, SpotifyEvents, SpotifyMe, SpotifyPlaybackState } from '../utils/types'
+import { bem, waitForTime } from '../utils'
+import { SpotifyPlaylist, SpotifyEvents, SpotifyMe, SpotifyPlaybackState, BrowserState, PlayerAction } from '../utils/types'
 import { ipcRenderer } from 'electron'
 import { ProgressCircle, View } from 'react-desktop/macOs'
 import { PageSettings } from './settings'
@@ -54,14 +54,7 @@ export class AppSpotify extends React.Component<Props, State> {
         }, 1000)
     }
 
-    onListClick(list: SpotifyPlaylist) {
-        console.log('Click', list)
-    }
-
     renderSettings() {
-        if (!this.state.me.id) {
-            return this.renderLoading()
-        }
         return (
             <PageSettings
                 onApply={this.onApplySettings.bind(this)}
@@ -85,7 +78,33 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     renderPlayer() {
-        return <PagePlayer playbackState={this.state.playbackState} />
+        return (
+            <PagePlayer
+                playbackState={this.state.playbackState}
+                updatePlaybackState={() => {
+                    ipcRenderer.send(SpotifyEvents.SendState, true)
+                }}
+                onPlayerAction={this.onPlayerAction.bind(this)}
+            />
+        )
+    }
+
+    onPlayerAction(action: PlayerAction) {
+        switch (action) {
+            case PlayerAction.Pause:
+                ipcRenderer.send(SpotifyEvents.Pause)
+                break
+            case PlayerAction.Play:
+                ipcRenderer.send(SpotifyEvents.Play)
+                break
+            case PlayerAction.Next:
+                ipcRenderer.send(SpotifyEvents.Next)
+                break
+            case PlayerAction.Prev:
+                ipcRenderer.send(SpotifyEvents.Prev)
+            default:
+        }
+        waitForTime(1000).then(() => ipcRenderer.send(SpotifyEvents.SendState, true))
     }
 
     onApplySettings() {
@@ -97,24 +116,15 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     render() {
+        if (!this.state.me.id) {
+            return this.renderLoading()
+        }
         return (
             <div className={styles()}>
-                {this.state.mode === 'settings' && this.renderSettings()}
+                {this.state.mode === BrowserState.Settings && this.renderSettings()}
                 {this.state.mode === 'SERVER_ERROR' && this.renderServerError()}
-                {this.state.mode === 'PLAYER' && this.renderPlayer()}
+                {this.state.mode === BrowserState.Player && this.renderPlayer()}
                 {this.state.mode === 'loading' && this.renderLoading()}
-                {this.state.mode === 'index' && (
-                    <div className={styles('list')}>
-                        {this.state.playlists.length <= 0 && <div>Loading...</div>}
-                        {this.state.playlists.map(list => {
-                            return (
-                                <div key={`id${list.id}`} onClick={() => this.onListClick(list)} className={styles('link')}>
-                                    {list.name}
-                                </div>
-                            )
-                        })}
-                    </div>
-                )}
             </div>
         )
     }

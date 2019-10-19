@@ -40,12 +40,19 @@ export class AppBrowserStatePlayer implements AppBrowserState {
         this.win.hide()
     }
 
-    onEnter(options?: AppBrowserOptions) {
+    onEnter(options: AppBrowserOptions = { hash: '' }) {
         if (options && options.position) {
             this.win.setPosition(options.position.x, options.position.y, false)
+        } else {
+            this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
         }
-        this.browser.loadFile('index.html', { hash: 'PLAYER' })
+        this.browser.loadFile('index.html', { hash: options!.hash || BrowserState.Player })
         this.win.show()
+        if (isDev) {
+            this.win.setSize(this.config.width + 600, this.config.height * 1.4)
+            this.win.webContents.openDevTools({ mode: 'bottom' })
+            this.win.setPosition(0, 0, false)
+        }
     }
 
     auth(url: string) {

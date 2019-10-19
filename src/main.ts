@@ -3,7 +3,7 @@ import { AppWindow } from './main/index'
 import { Settings } from './utils/types'
 
 let appWindow: AppWindow
-export const isDev = process.argv.findIndex(arg => arg === 'dev') >= 0
+export const isDev = process.argv.findIndex(arg => arg === 'dev' || arg.indexOf('--remote-debugging-port') !== -1) >= 0
 
 const createWindow = () => {
     appWindow = new AppWindow({
@@ -20,7 +20,3 @@ const createWindow = () => {
 
 app.setLoginItemSettings({ openAsHidden: true })
 app.on('ready', createWindow)
-app.on('window-all-closed', () => {
-    console.log('Close ALL')
-    app.quit()
-})

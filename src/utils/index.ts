@@ -1,5 +1,11 @@
 export const bem = (parent: string) => (child?: string, params?: any) => {
-    return [parent].concat(child ? [child] : []).join('_')
+    const res = [parent].concat(child ? [child] : [])
+    const first = res.join('_')
+    params &&
+        Object.keys(params).forEach(param => {
+            params[param] && res.push(param)
+        })
+    return params ? first + ' ' + res.join('_') : first
 }
 
 export const normalizeSpotifyURI = (uri: string) =>

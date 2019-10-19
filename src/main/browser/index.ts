@@ -1,4 +1,4 @@
-import { BrowserWindow, LoadFileOptions, app, Event } from 'electron'
+import { BrowserWindow, LoadFileOptions, app, Event, screen as EScreen } from 'electron'
 import { BrowserState, AppBrowserOptions } from '../../utils/types'
 import { AppBrowserStateSettings } from './settings'
 import { AppBrowserStatePlayer } from './player'
@@ -62,7 +62,7 @@ export class AppBrowserWindow {
         }
 
         if (this.state && this.state.stateId === newState) {
-            this.show()
+            this.state.onEnter(options, true)
             return
         }
 
@@ -96,8 +96,15 @@ export class AppBrowserWindow {
     }
 
     send(channel: string, ...args: any[]) {
-        console.log('SEND: ', channel, JSON.stringify(args[0]).length)
-        this.state.win && this.state.win.webContents.send(channel, ...args)
+        console.log('SEND: ', channel, JSON.stringify(args).length + ' bytes')
+        this.states.forEach(state => state.win && state.win.webContents.send(channel, ...args))
+        // this.state.win && this.state.win.webContents.send(channel, ...args)
+    }
+
+    getExternalDisplay() {
+        return EScreen.getAllDisplays().find(display => {
+            return display.bounds.x !== 0 || display.bounds.y !== 0
+        })
     }
 
     closeAll() {
@@ -111,5 +118,15 @@ export class AppBrowserWindow {
 
     loadItem(item: string) {
         return this.states[0].win.webContents.executeJavaScript(`localStorage.getItem('${item}')`)
+    }
+
+    moveWindowToDebugScreen(win: BrowserWindow, width: number, height: number) {
+        const externalDisplay = this.getExternalDisplay()
+        if (externalDisplay && isDev) {
+            win.setPosition(
+                externalDisplay.bounds.x + (externalDisplay.bounds.width / 2 - width / 2),
+                externalDisplay.bounds.y + (externalDisplay.bounds.height / 2 - height / 2)
+            )
+        }
     }
 }

@@ -71,7 +71,8 @@ export class AppWindow {
         await this.loadMe()
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        this.goSettings()
+        // this.goSettings()
+        this.showMiniPlayer()
     }
 
     listenToEvents() {
@@ -79,8 +80,12 @@ export class AppWindow {
             this.browser.send(SpotifyEvents.List, type || 'all', this.playlists.all)
         })
 
-        ipcMain.on(SpotifyEvents.SendState, () => {
-            this.playbackState && this.browser.send(SpotifyEvents.State, this.playbackState)
+        ipcMain.on(SpotifyEvents.SendState, (_event, refresh: boolean = false) => {
+            if (refresh) {
+                this.syncPlaybackState()
+            } else {
+                this.playbackState && this.browser.send(SpotifyEvents.State, this.playbackState)
+            }
         })
 
         ipcMain.on(SpotifyEvents.SendMe, async () => {
@@ -97,6 +102,28 @@ export class AppWindow {
 
         ipcMain.on(SpotifyEvents.CancelSettings, _event => {
             this.browser.win.hide()
+        })
+
+        ipcMain.on(SpotifyEvents.Pause, () => {
+            spotifyApi.pause()
+        })
+
+        ipcMain.on(SpotifyEvents.Play, (_event, uri?: string) => {
+            spotifyApi.play(
+                uri
+                    ? {
+                          context_uri: uri,
+                      }
+                    : undefined
+            )
+        })
+
+        ipcMain.on(SpotifyEvents.Next, () => {
+            this.onSkip()
+        })
+
+        ipcMain.on(SpotifyEvents.Prev, () => {
+            spotifyApi.skipToPrevious()
         })
     }
 
@@ -288,6 +315,7 @@ export class AppWindow {
             )
         }
         this.tray.syncState(this.playbackState)
+        this.browser.send(SpotifyEvents.State, this.playbackState)
         return this.playbackState
     }
 
@@ -301,9 +329,8 @@ export class AppWindow {
         return id
     }
 
-    goSettings(options: LoadFileOptions = { hash: 'settings' }) {
-        this.browser.setState(BrowserState.Settings)
-        this.browser.loadFile('index.html', options)
+    goSettings(options: LoadFileOptions = { hash: BrowserState.Settings }) {
+        this.browser.setState(BrowserState.Settings, options)
     }
 
     syncAuth(body: any) {
@@ -312,11 +339,18 @@ export class AppWindow {
         this.storeItem('SPOTIFY_AUTH', JSON.stringify(body))
     }
 
-    devSetup() {
-        if (!this.options.isDev) {
+    async devSetup() {
+        // if (this.options.isDev) {
+        //     await waitForTime(6000)
+        //     this.showMiniPlayer()
+        // }
+
+        if (!this.options.isDev || process.argv.findIndex(arg => arg.indexOf('--remote-debugging-port') !== -1) >= 0) {
             return
         }
+
         const elemon = require('elemon')
+
         elemon({
             app: app,
             mainFile: 'main.js',
@@ -338,7 +372,7 @@ export class AppWindow {
         this.storeItem('SPOTIFY_FAVORITES', JSON.stringify(favs))
     }
 
-    showMiniPlayer(trayBounds: Rectangle) {
-        this.browser.setState(BrowserState.Player, { position: { x: trayBounds.x, y: 20 } })
+    showMiniPlayer(trayBounds?: Rectangle) {
+        this.browser.setState(BrowserState.Player, trayBounds ? { position: { x: trayBounds.x, y: trayBounds.y + 20 } } : {})
     }
 }

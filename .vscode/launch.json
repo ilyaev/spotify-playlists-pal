@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Main Process",
+      "name": "Main Process",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceRoot}",
@@ -11,11 +11,12 @@
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
       },
       "program": "${workspaceRoot}/app/main.js",
+      "args": ["dev"],
       "internalConsoleOptions": "openOnSessionStart",
       "protocol": "inspector"
     },
     {
-      "name": "Debug Renderer Process",
+      "name": "Renderer Process",
       "type": "chrome",
       "request": "launch",
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",

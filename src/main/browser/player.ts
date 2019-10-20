@@ -2,14 +2,14 @@ import { AppBrowserState, BrowserState, AppBrowserOptions } from '../../utils/ty
 import { BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from 'electron'
 
 import { isDev } from '../../main'
-import { AppBrowserWindow } from '.'
+import { AppBrowserWindow } from './index'
 
 export class AppBrowserStatePlayer implements AppBrowserState {
     stateId = BrowserState.Player
     browser: AppBrowserWindow
 
     config = {
-        width: 345,
+        width: 340,
         height: 460,
         skipTaskbar: true,
         resizable: isDev,
@@ -51,7 +51,7 @@ export class AppBrowserStatePlayer implements AppBrowserState {
         this.win.show()
         this.browser.send('WINDOW_SHOW', this.stateId)
         if (isDev) {
-            this.win.setSize(this.config.width + 600, this.config.height + 100)
+            this.win.setSize(this.config.width + 600, this.config.height * 1.8)
             this.win.webContents.openDevTools({ mode: 'bottom' })
             this.win.setPosition(0, 0, false)
         }

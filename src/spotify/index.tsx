@@ -92,7 +92,7 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     renderPlayer() {
-        return (
+        return this.state.playbackState ? (
             <PagePlayer
                 playbackState={this.state.playbackState}
                 updatePlaybackState={() => {
@@ -101,6 +101,8 @@ export class AppSpotify extends React.Component<Props, State> {
                 active={this.state.playerActive}
                 onPlayerAction={this.onPlayerAction.bind(this)}
             />
+        ) : (
+            this.renderLoading()
         )
     }
 
@@ -120,6 +122,12 @@ export class AppSpotify extends React.Component<Props, State> {
                 break
             case PlayerAction.Rewind:
                 ipcRenderer.send(SpotifyEvents.Rewind, data || 0)
+                break
+            case PlayerAction.ToggleShuffle:
+                ipcRenderer.send(SpotifyEvents.ToggleShuffle)
+                break
+            case PlayerAction.ToggleRepeat:
+                ipcRenderer.send(SpotifyEvents.ToggleRepeat)
                 break
             default:
         }

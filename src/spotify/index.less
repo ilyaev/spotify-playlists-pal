@@ -1,9 +1,13 @@
+@progress-bg-color: gray;
+@progress-bar-color: black;
+
 .spotify {
     background-color: rgba(0, 0, 0, 0.04);
     width: 100%;
     height: 100%;
     // padding: 20px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
 
     &_list {
         padding: 0px;
@@ -18,13 +22,14 @@
 }
 
 .player {
-    padding: 20px;
+    padding: 20px 20px 15px 20px;
     display: flex;
+    background-color: #dbdbdb;
 
     &_context_image {
         min-width: 300px;
         min-height: 300px;
-        border: 1px solid gray;
+        // border: 1px solid gray;
         margin-right: 20px;
     }
 
@@ -40,6 +45,7 @@
         white-space: nowrap;
         margin-bottom: 5px;
         text-align: center;
+        font-size: larger;
     }
 
     &_context {
@@ -54,10 +60,13 @@
         margin-bottom: 10px;
         margin-top: -10px;
         display: flex;
+        width: 300px;
         // border: 1px solid black;
         flex: 1;
         flex-direction: row;
         align-self: center;
+        align-items: center;
+        margin-left: -10px;
     }
 
     &_button {
@@ -71,6 +80,16 @@
             -ms-transform: rotate(180deg);
             transform: rotate(180deg);
         }
+        &_green {
+            filter: invert(31%) sepia(71%) saturate(5326%) hue-rotate(110deg) brightness(97%) contrast(103%);
+        }
+        &_green_noclick {
+            filter: invert(31%) sepia(71%) saturate(5326%) hue-rotate(110deg) brightness(97%) contrast(103%);
+            cursor: default !important;
+        }
+        &_noclick {
+            cursor: default !important;
+        }
     }
 }
 
@@ -78,23 +97,33 @@
     width: 100%;
     height: 5px;
     display: flex;
-    margin-top: 10px;
-    // padding: 5px 0px 5px 0px;
+    margin-top: 5px;
     cursor: pointer;
-    background-color: black;
-    // border: 1px solid black;
+    background-color: @progress-bg-color;
     &_bar {
         position: relative;
-        background-color: gray;
+        background-color: @progress-bar-color;
         z-index: 1;
     }
     &_bulb {
-        width: 10px;
-        height: 10px;
-        background-color: gray;
-        margin-left: -5px;
+        width: 12px;
+        height: 12px;
+        background-color: @progress-bar-color;
+        margin-left: -6px;
         z-index: 2;
         margin-top: -3px;
-        border-radius: 5px;
+        border-radius: 6px;
+    }
+    &_timer {
+        width: 100%;
+        display: flex;
+    }
+
+    &_timer_item {
+        flex: 1;
+        margin-top: 6px;
+        &_right {
+            text-align: right;
+        }
     }
 }

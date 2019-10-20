@@ -76,6 +76,7 @@ export interface SpotifyPlaybackState {
     originContextUri: string
     is_playing: boolean
     shuffle_state: boolean
+    repeat_state: 'off' | 'context'
     item: {
         type: string
         uri: string
@@ -124,6 +125,8 @@ export enum SpotifyEvents {
     SendMe = 'SPOTIFY-SEND-ME',
     ApplySettings = 'SPOTIFY-APPLY-SETTINGS',
     CancelSettings = 'SPOTIFY-CANCEL-SETTINGS',
+    ToggleShuffle = 'SPOTIFY-TOGGLE-SHUFFLE',
+    ToggleRepeat = 'SPOTIFY-TOGGLE-REPEAT',
 }
 
 export enum BrowserState {
@@ -138,6 +141,8 @@ export enum PlayerAction {
     Prev = 'PLAYER-PREV',
     Pause = 'PLAYER-PAUSE',
     Rewind = 'PLAYER-REWIND',
+    ToggleShuffle = 'PLAYER-TOGGLE-SHUFFLE',
+    ToggleRepeat = 'PLAYER-TOGGLE-REPEAT',
 }
 
 export interface AppBrowserOptions extends LoadFileOptions {

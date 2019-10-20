@@ -12,7 +12,7 @@ interface Props {
     playbackState: SpotifyPlaybackState
     active: boolean
     updatePlaybackState: () => void
-    onPlayerAction: (action: PlayerAction, ...args) => void
+    onPlayerAction: (action: PlayerAction, ...args: any) => void
 }
 
 interface State {
@@ -56,7 +56,7 @@ export class PagePlayer extends React.Component<Props, State> {
     }
 
     render() {
-        const loaded = this.props.playbackState.context
+        const loaded = this.props.playbackState.item
 
         if (!loaded) {
             return <div>Loading</div>
@@ -71,23 +71,37 @@ export class PagePlayer extends React.Component<Props, State> {
             <div className={styles()}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className={styles('track_controls')}>
+                        <SvgButton
+                            img={'shuffle'}
+                            width={20}
+                            green={this.props.playbackState.shuffle_state}
+                            onClick={() => this.props.onPlayerAction(PlayerAction.ToggleShuffle)}
+                        />
                         <SvgButton img={'next'} flip onClick={() => this.props.onPlayerAction(PlayerAction.Prev)} />
                         <SvgButton
                             img={isPlaying ? 'pause' : 'play'}
                             onClick={() => this.props.onPlayerAction(isPlaying ? PlayerAction.Pause : PlayerAction.Play)}
                         />
                         <SvgButton img={'next'} onClick={() => this.props.onPlayerAction(PlayerAction.Next)} />
+                        <SvgButton
+                            img={'repeat'}
+                            width={20}
+                            green={this.props.playbackState.repeat_state !== 'off'}
+                            onClick={() => this.props.onPlayerAction(PlayerAction.ToggleRepeat)}
+                        />
                     </div>
                     <div className={styles('track')}>{track}</div>
                     <div className={styles('context_image')}>
                         <img src={img} width={300} style={{ verticalAlign: 'text-top' }} />
                     </div>
-                    <div className={styles('context')}>{context}</div>
+                    <div className={styles('context')} onMouseEnter={this.contextTooltip.bind(this)}>
+                        {context}
+                    </div>
                     <div style={{ width: '300px' }}>
                         <PlayerProgressBar
                             total={this.state.total}
                             startFrom={this.state.progress}
-                            active={this.props.active}
+                            active={this.props.active && isPlaying}
                             onClick={perc => {
                                 this.props.onPlayerAction(PlayerAction.Rewind, Math.floor((perc / 100) * this.state.total))
                             }}
@@ -96,5 +110,9 @@ export class PagePlayer extends React.Component<Props, State> {
                 </div>
             </div>
         )
+    }
+
+    contextTooltip() {
+        // console.log('Tooltip: ', this.props.playbackState.item)
     }
 }

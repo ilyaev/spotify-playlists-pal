@@ -72,7 +72,7 @@ export class AppTray {
 
     getCurrentTrackCaption() {
         let result = 'Nothing'
-        if (!this.playbackState.context || !this.playbackState.item) {
+        if (!this.playbackState.item) {
             return result
         }
         const perc =
@@ -90,6 +90,7 @@ export class AppTray {
                     label: 'Playing: ' + this.getCurrentTrackCaption(),
                     id: 'playing',
                     type: 'normal',
+                    enabled: this.playbackState.item ? true : false,
                     click: () => {
                         this.options.onRightClick(this.trayBounds)
                     },
@@ -179,14 +180,14 @@ export class AppTray {
             )
         )
         // this.tray.setContextMenu(this.contextMenu)
-        this.tray.setToolTip(this.playbackState.context ? this.lists.getDisplayName(this.playbackState.context.uri) : 'Sptofiy is silent')
+        this.tray.setToolTip(this.playbackState.context ? this.lists.getDisplayName(this.playbackState.context.uri) : 'Nothing is played')
     }
 
     buildMenuItems(list: SpotifyPlaylist[], type: 'radio' | 'normal' = 'radio'): MenuItemConstructorOptions[] {
         const res: MenuItemConstructorOptions[] = list.map(one => {
             return {
                 label: one.name,
-                type: type,
+                type: type === 'radio' && this.playbackState.context ? 'radio' : 'normal',
                 id: one.uri,
                 checked: type === 'radio' && this.playbackState.context && one.uri === this.playbackState.context.uri ? true : undefined,
                 click: _event => {

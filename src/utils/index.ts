@@ -16,3 +16,9 @@ export const normalizeSpotifyURI = (uri: string) =>
         .join(':')
 
 export const waitForTime = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+export const msToString = (ms: number) => {
+    const mins = Math.floor(ms / 60000)
+    const secs = Math.round((ms - mins * 60000) / 1000)
+    return `${mins < 10 ? '0' + mins : mins}:${secs < 10 ? '0' + secs : secs}`
+}

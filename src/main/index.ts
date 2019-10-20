@@ -131,6 +131,16 @@ export class AppWindow {
             spotifyApi.seek(newPosition)
         })
 
+        ipcMain.on(SpotifyEvents.ToggleShuffle, () => {
+            this.onShuffle(this.playbackState.shuffle_state ? false : true)
+        })
+
+        ipcMain.on(SpotifyEvents.ToggleRepeat, () => {
+            spotifyApi.setRepeat({
+                state: this.playbackState.repeat_state === 'off' ? 'context' : 'off',
+            })
+        })
+
         ipcMain.on('DEBUG', (event, data) => {
             console.log('DEBUG: ', data)
         })
@@ -311,6 +321,7 @@ export class AppWindow {
 
     async syncPlaybackState() {
         this.playbackState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
+
         if (this.playbackState.context && this.playbackState.context.uri) {
             this.playbackState.originContextUri = '' + this.playbackState.context.uri
             this.playbackState.context.uri = normalizeSpotifyURI(this.playbackState.context.uri)

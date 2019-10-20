@@ -7,15 +7,21 @@ const styles = bem('player')
 interface Props {
     img: string
     onClick?: () => void
+    width?: number
+    green?: boolean
     flip?: boolean
 }
 export const SvgButton = (props: Props) => {
     return (
         <img
             src={`static/btn_${props.img}.svg`}
-            width={50}
-            height={50}
-            className={styles('button', { flip: props.flip ? true : false })}
+            width={props.width || 50}
+            height={props.width || 50}
+            className={styles('button', {
+                flip: props.flip ? true : false,
+                green: props.green || false,
+                noclick: props.onClick ? false : true,
+            })}
             onClick={props.onClick ? () => props.onClick() : undefined}
         />
     )

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { bem } from '../utils'
+import { bem, msToString } from '../utils'
 
 import './index.less'
 import { ipcRenderer } from 'electron'
@@ -52,16 +52,22 @@ export class PlayerProgressBar extends React.Component<Props, State> {
             const newPosition = Math.floor((newCurrent / this.props.total) * 100)
             this.setState({ current: newCurrent, position: newPosition })
             newPosition < 100 && this.forwardProgress()
-            ipcRenderer.send('DEBUG', 'TICK')
+            // ipcRenderer.send('DEBUG', 'TICK')
         }, 1000)
     }
 
     render() {
         const perc = Math.min(100, this.state.position)
         return (
-            <div className={styles()} onClick={this.onBarClick.bind(this)}>
-                <div className={styles('bar')} style={{ width: `${perc}%` }}></div>
-                <div className={styles('bulb')} />
+            <div>
+                <div className={styles()} onClick={this.onBarClick.bind(this)}>
+                    <div className={styles('bar')} style={{ width: `${perc}%` }}></div>
+                    <div className={styles('bulb')} />
+                </div>
+                <div className={styles('timer')}>
+                    <div className={styles('timer_item')}>{msToString(this.state.current)}</div>
+                    <div className={styles('timer_item', { right: true })}>{msToString(this.props.total)}</div>
+                </div>
             </div>
         )
     }

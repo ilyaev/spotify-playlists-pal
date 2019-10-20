@@ -21,7 +21,7 @@ export class AppBrowserWindow {
     constructor(options: Options) {
         this.options = options
         this.initStates()
-        this.setState(BrowserState.Settings)
+        this.setState(BrowserState.Settings, { hidden: true })
     }
 
     initStates() {
@@ -47,7 +47,10 @@ export class AppBrowserWindow {
     }
 
     hide() {
-        this.state.win && this.state.win.hide()
+        if (this.state.win) {
+            this.send('WINDOW_HIDE', this.state.stateId)
+            this.state.win.hide()
+        }
     }
 
     getWin() {

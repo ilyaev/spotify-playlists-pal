@@ -16,6 +16,7 @@ interface State {
     me: SpotifyMe
     playbackState: SpotifyPlaybackState
     mode: string
+    playerActive: boolean
 }
 
 export class AppSpotify extends React.Component<Props, State> {
@@ -24,6 +25,7 @@ export class AppSpotify extends React.Component<Props, State> {
         mode: 'index',
         playbackState: {} as SpotifyPlaybackState,
         me: {} as SpotifyMe,
+        playerActive: true,
     }
 
     componentDidMount() {
@@ -45,6 +47,18 @@ export class AppSpotify extends React.Component<Props, State> {
         })
         ipcRenderer.on(SpotifyEvents.State, (_event, playbackState: SpotifyPlaybackState) => {
             this.setState({ playbackState })
+        })
+
+        ipcRenderer.on('WINDOW_SHOW', (event, stateID) => {
+            if (stateID === BrowserState.Player) {
+                this.setState({ playerActive: true })
+            }
+        })
+
+        ipcRenderer.on('WINDOW_HIDE', (event, stateID) => {
+            if (stateID === BrowserState.Player) {
+                this.setState({ playerActive: false })
+            }
         })
 
         setTimeout(() => {
@@ -84,12 +98,13 @@ export class AppSpotify extends React.Component<Props, State> {
                 updatePlaybackState={() => {
                     ipcRenderer.send(SpotifyEvents.SendState, true)
                 }}
+                active={this.state.playerActive}
                 onPlayerAction={this.onPlayerAction.bind(this)}
             />
         )
     }
 
-    onPlayerAction(action: PlayerAction) {
+    onPlayerAction(action: PlayerAction, data?: any) {
         switch (action) {
             case PlayerAction.Pause:
                 ipcRenderer.send(SpotifyEvents.Pause)
@@ -102,6 +117,10 @@ export class AppSpotify extends React.Component<Props, State> {
                 break
             case PlayerAction.Prev:
                 ipcRenderer.send(SpotifyEvents.Prev)
+                break
+            case PlayerAction.Rewind:
+                ipcRenderer.send(SpotifyEvents.Rewind, data || 0)
+                break
             default:
         }
         waitForTime(1000).then(() => ipcRenderer.send(SpotifyEvents.SendState, true))
@@ -121,11 +140,16 @@ export class AppSpotify extends React.Component<Props, State> {
         }
         return (
             <div className={styles()}>
+                {this.state.mode === 'sandbox' && this.sandbox()}
                 {this.state.mode === BrowserState.Settings && this.renderSettings()}
                 {this.state.mode === 'SERVER_ERROR' && this.renderServerError()}
                 {this.state.mode === BrowserState.Player && this.renderPlayer()}
                 {this.state.mode === 'loading' && this.renderLoading()}
             </div>
         )
+    }
+
+    sandbox() {
+        // return <PlayerProgressBar total={10000} startFrom={3000} />
     }
 }

@@ -37,7 +37,11 @@ export class AppBrowserStateSettings implements AppBrowserState {
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {
         this.browser.loadFile('index.html', { hash: options!.hash || BrowserState.Settings })
-        this.win.show()
+        if (options && options.hidden) {
+            this.win.hide()
+        } else {
+            this.win.show()
+        }
         isDev && this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
     }
 

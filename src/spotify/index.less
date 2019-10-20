@@ -22,8 +22,8 @@
     display: flex;
 
     &_context_image {
-        min-width: 100px;
-        min-height: 100px;
+        min-width: 300px;
+        min-height: 300px;
         border: 1px solid gray;
         margin-right: 20px;
     }
@@ -33,14 +33,36 @@
         flex-direction: column;
     }
 
+    &_track {
+        width: 300px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+
+    &_context {
+        width: 300px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-top: 5px;
+    }
+
     &_track_controls {
-        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-top: -10px;
         display: flex;
+        // border: 1px solid black;
+        flex: 1;
         flex-direction: row;
+        align-self: center;
     }
 
     &_button {
         margin: 0px 10px 0px 10px;
+        // flex: 1;
         cursor: pointer;
         &_flip {
             -webkit-transform: rotate(180deg);
@@ -49,5 +71,30 @@
             -ms-transform: rotate(180deg);
             transform: rotate(180deg);
         }
+    }
+}
+
+.progressbar {
+    width: 100%;
+    height: 5px;
+    display: flex;
+    margin-top: 10px;
+    // padding: 5px 0px 5px 0px;
+    cursor: pointer;
+    background-color: black;
+    // border: 1px solid black;
+    &_bar {
+        position: relative;
+        background-color: gray;
+        z-index: 1;
+    }
+    &_bulb {
+        width: 10px;
+        height: 10px;
+        background-color: gray;
+        margin-left: -5px;
+        z-index: 2;
+        margin-top: -3px;
+        border-radius: 5px;
     }
 }

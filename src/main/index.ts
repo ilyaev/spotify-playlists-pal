@@ -22,6 +22,7 @@ import {
     Settings,
     SpotifyFavoriteList,
     BrowserState,
+    AppBrowserOptions,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
@@ -29,6 +30,7 @@ import { spotifyApi, spotifyMac } from '../utils/api'
 import { normalizeSpotifyURI, waitForTime } from '../utils'
 import { AppBrowserWindow } from './browser/index'
 import fetch from 'node-fetch'
+import { isDev } from '../main'
 
 let INSTANCE_ID = 'atz'
 
@@ -71,8 +73,7 @@ export class AppWindow {
         await this.loadMe()
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        // this.goSettings()
-        this.showMiniPlayer()
+        isDev && this.showMiniPlayer()
     }
 
     listenToEvents() {
@@ -125,6 +126,14 @@ export class AppWindow {
         ipcMain.on(SpotifyEvents.Prev, () => {
             spotifyApi.skipToPrevious()
         })
+
+        ipcMain.on(SpotifyEvents.Rewind, (_event, newPosition) => {
+            spotifyApi.seek(newPosition)
+        })
+
+        ipcMain.on('DEBUG', (event, data) => {
+            console.log('DEBUG: ', data)
+        })
     }
 
     async listenToRedirects() {
@@ -132,7 +141,7 @@ export class AppWindow {
     }
 
     async authSpotify() {
-        this.goSettings()
+        this.goSettings({ hash: BrowserState.Settings, hidden: true })
         const authRaw = await this.loadItem('SPOTIFY_AUTH')
         this.auth = JSON.parse(authRaw || JSON.stringify({ access_token: '' }))
         if (this.auth.access_token) {
@@ -177,7 +186,7 @@ export class AppWindow {
                     } else {
                         this.browser.win.hide()
                         this.browser.win.setSize(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
-                        this.goSettings()
+                        this.goSettings({ hash: BrowserState.Settings })
                         this.syncAuth(body)
                         this.initialize()
                     }
@@ -329,7 +338,7 @@ export class AppWindow {
         return id
     }
 
-    goSettings(options: LoadFileOptions = { hash: BrowserState.Settings }) {
+    goSettings(options: AppBrowserOptions = { hash: BrowserState.Settings }) {
         this.browser.setState(BrowserState.Settings, options)
     }
 
@@ -340,11 +349,6 @@ export class AppWindow {
     }
 
     async devSetup() {
-        // if (this.options.isDev) {
-        //     await waitForTime(6000)
-        //     this.showMiniPlayer()
-        // }
-
         if (!this.options.isDev || process.argv.findIndex(arg => arg.indexOf('--remote-debugging-port') !== -1) >= 0) {
             return
         }

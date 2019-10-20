@@ -117,6 +117,7 @@ export enum SpotifyEvents {
     Next = 'SPOTIFY-NEXT',
     Prev = 'SPOTIFT-PREV',
     Pause = 'SPOTIFY-PAUSE',
+    Rewind = 'SPOTIFY-REWIND',
     Settings = 'SPOTIFY-SETTINGS',
     SendList = 'SPOTIFY-SEND-LIST',
     SendState = 'SPOTIFY-SEND-STATE',
@@ -136,10 +137,12 @@ export enum PlayerAction {
     Next = 'PLAYER-NEXT',
     Prev = 'PLAYER-PREV',
     Pause = 'PLAYER-PAUSE',
+    Rewind = 'PLAYER-REWIND',
 }
 
 export interface AppBrowserOptions extends LoadFileOptions {
     position?: { x: number; y: number }
+    hidden?: boolean
 }
 
 export interface AppBrowserState {

@@ -1,5 +1,5 @@
 import { AppBrowserState, BrowserState, AppBrowserOptions } from '../../utils/types'
-import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
+import { BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from 'electron'
 
 import { isDev } from '../../main'
 import { AppBrowserWindow } from '.'
@@ -9,14 +9,14 @@ export class AppBrowserStatePlayer implements AppBrowserState {
     browser: AppBrowserWindow
 
     config = {
-        width: 500,
-        height: 500,
+        width: 345,
+        height: 460,
         skipTaskbar: true,
         resizable: isDev,
         maximizable: isDev,
         minimizable: isDev,
         autoHideMenuBar: true,
-        alwaysOnTop: true,
+        // alwaysOnTop: true,
         show: false,
         frame: isDev ? true : false,
         webPreferences: {
@@ -37,19 +37,21 @@ export class AppBrowserStatePlayer implements AppBrowserState {
     }
 
     onExit() {
+        this.browser.send('WINDOW_HIDE', this.stateId)
         this.win.hide()
     }
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {
         if (options && options.position) {
-            this.win.setPosition(options.position.x, options.position.y, false)
+            this.win.setPosition(options.position.x - Math.floor(this.config.width / 2) + 2, options.position.y, false)
         } else {
             this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
         }
         this.browser.loadFile('index.html', { hash: options!.hash || BrowserState.Player })
         this.win.show()
+        this.browser.send('WINDOW_SHOW', this.stateId)
         if (isDev) {
-            this.win.setSize(this.config.width + 600, this.config.height * 1.4)
+            this.win.setSize(this.config.width + 600, this.config.height + 100)
             this.win.webContents.openDevTools({ mode: 'bottom' })
             this.win.setPosition(0, 0, false)
         }

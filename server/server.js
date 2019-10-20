@@ -10,6 +10,8 @@ const spotifyApi = new SpotifyWebApi({
     clientSecret: env.clientSecret,
 })
 
+spotifyApi.see
+
 const dbClass = () => {
     const data = {}
     return {

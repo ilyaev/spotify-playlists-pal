@@ -1,11 +1,11 @@
-import { app, Tray, MenuItem, Menu, BrowserWindow, MenuItemConstructorOptions, Rectangle } from 'electron'
+import { app, Tray, Menu, MenuItemConstructorOptions, Rectangle } from 'electron'
 import { TRAY_ICON_FILE } from '../utils/const'
 import { SpotifyPlaylists } from './playlists'
-import { SpotifyPlaylist, SpotifyPlaybackState, Settings, SpotifyMe } from '../utils/types'
+import { SpotifyPlaylist, SpotifyPlaybackState, Settings, SpotifyMe, BrowserState, AppBrowserOptions } from '../utils/types'
 
 interface TrayOptions {
     onPlaylistClick: (list: SpotifyPlaylist) => void
-    onSettings: () => void
+    onSettings: (options?: AppBrowserOptions) => void
     onLogout: () => void
     onShuffle: (checked: boolean) => void
     onRefresh: () => void
@@ -28,6 +28,7 @@ export class AppTray {
     settings: Settings
     me: SpotifyMe
     mouseOver: boolean
+    trayBounds: Rectangle
 
     constructor(lists: SpotifyPlaylists, settings: Settings, me: SpotifyMe, options?: TrayOptions) {
         this.basename = app.getAppPath() + '/'
@@ -35,6 +36,7 @@ export class AppTray {
         this.lists = lists
         this.settings = settings
         this.options = options || ({} as any)
+        this.trayBounds = undefined
 
         this.tray = new Tray(this.basename + TRAY_ICON_FILE)
 
@@ -42,6 +44,7 @@ export class AppTray {
 
         this.tray.on('click', (_event, _bounds, _position) => {
             this.options.onLeftClick()
+            this.trayBounds = _bounds
             this.contextMenu && this.tray.popUpContextMenu(this.contextMenu)
         })
 
@@ -83,7 +86,14 @@ export class AppTray {
     refresh() {
         this.contextMenu = Menu.buildFromTemplate(
             ([
-                { label: 'Playing: ' + this.getCurrentTrackCaption(), id: 'playing', type: 'normal', enabled: false },
+                {
+                    label: 'Playing: ' + this.getCurrentTrackCaption(),
+                    id: 'playing',
+                    type: 'normal',
+                    click: () => {
+                        this.options.onRightClick(this.trayBounds)
+                    },
+                },
                 { type: 'separator' },
             ] as MenuItemConstructorOptions[]).concat(
                 this.buildMenuItems(this.lists.getFavPlaylists(parseInt(this.settings.max_size), this.settings.order_recent_playlist))
@@ -144,7 +154,7 @@ export class AppTray {
                         {
                             label: 'Settings',
                             click: () => {
-                                this.options.onSettings && this.options.onSettings()
+                                this.options.onSettings && this.options.onSettings({ hash: BrowserState.Settings, hidden: false })
                             },
                         },
                         { type: 'separator' },

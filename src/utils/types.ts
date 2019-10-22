@@ -1,5 +1,4 @@
 import { BrowserWindowConstructorOptions, BrowserWindow, LoadFileOptions } from 'electron'
-import { AppTray } from '../main/tray'
 
 export interface Settings {
     max_size: string

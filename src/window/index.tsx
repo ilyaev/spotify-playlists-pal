@@ -49,13 +49,13 @@ export class AppSpotify extends React.Component<Props, State> {
             this.setState({ playbackState })
         })
 
-        ipcRenderer.on('WINDOW_SHOW', (event, stateID) => {
+        ipcRenderer.on('WINDOW_SHOW', (_event, stateID) => {
             if (stateID === BrowserState.Player) {
                 this.setState({ playerActive: true })
             }
         })
 
-        ipcRenderer.on('WINDOW_HIDE', (event, stateID) => {
+        ipcRenderer.on('WINDOW_HIDE', (_event, stateID) => {
             if (stateID === BrowserState.Player) {
                 this.setState({ playerActive: false })
             }

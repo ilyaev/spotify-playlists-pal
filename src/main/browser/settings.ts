@@ -29,10 +29,18 @@ export class AppBrowserStateSettings implements AppBrowserState {
     constructor(browser: AppBrowserWindow) {
         this.browser = browser
         this.win = new BrowserWindow(this.config)
+
+        isDev ||
+            this.win.on('blur', () => {
+                this.onExit()
+            })
     }
 
     onExit() {
-        this.win.hide()
+        if (this.win.isVisible()) {
+            this.browser.send('WINDOW_HIDE', this.stateId)
+            this.win.hide()
+        }
     }
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {

@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { SpotifyArtist, SpotifyTrack, PlayerAction } from '../utils/types'
-import { bem } from '../utils'
+import { SpotifyArtist, SpotifyTrack, PlayerAction } from '../../utils/types'
+import { bem } from '../../utils'
 
-import './index.less'
+import '../index.less'
 import { SvgButton } from './button'
 
 const styles = bem('artistinfo')

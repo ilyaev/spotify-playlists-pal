@@ -37,8 +37,10 @@ export class AppBrowserStatePlayer implements AppBrowserState {
     }
 
     onExit() {
-        this.browser.send('WINDOW_HIDE', this.stateId)
-        this.win.hide()
+        if (this.win.isVisible()) {
+            this.browser.send('WINDOW_HIDE', this.stateId)
+            this.win.hide()
+        }
     }
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {

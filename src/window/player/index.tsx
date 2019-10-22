@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { bem, waitForTime } from '../utils'
-import { SpotifyPlaybackState, PlayerAction, SpotifyEvents, SpotifyArtist, SpotifyTrack, PlayerMode } from '../utils/types'
+import { bem, waitForTime } from '../../utils'
+import { SpotifyPlaybackState, PlayerAction, SpotifyEvents, SpotifyArtist, SpotifyTrack, PlayerMode } from '../../utils/types'
 import { SvgButton } from './button'
 import { PlayerProgressBar } from './progress-bar'
-import { PlayerArtistInfo } from './player-artist'
+import { PlayerArtistInfo } from './artist'
 import { ProgressCircle } from 'react-desktop'
 
-import './index.less'
+import '../index.less'
 import { ipcRenderer } from 'electron'
 
 const styles = bem('player')
@@ -123,7 +123,7 @@ export class PagePlayer extends React.Component<Props, State> {
                     </div>
                     <div className={styles('track')}>{track}</div>
                     <div className={styles('context_image')}>
-                        {this.state.mode === PlayerMode.Track && <img src={img} width={300} style={{ verticalAlign: 'text-top' }} />}
+                        <img src={img} width={300} style={{ verticalAlign: 'text-top' }} />
                     </div>
                     {this.renderContextRow(artist, album, this.props.playbackState.item.album.uri)}
                     <div style={{ width: '300px' }}>
@@ -181,13 +181,7 @@ export class PagePlayer extends React.Component<Props, State> {
                 }}
             >
                 {this.state.artistLoaded ? (
-                    <PlayerArtistInfo
-                        artist={this.state.artist}
-                        top10={this.state.artistTopTracks}
-                        onAction={(action, ...args) => {
-                            this.props.onPlayerAction(action, ...args)
-                        }}
-                    />
+                    <PlayerArtistInfo artist={this.state.artist} top10={this.state.artistTopTracks} onAction={this.props.onPlayerAction} />
                 ) : (
                     <ProgressCircle size={25} />
                 )}

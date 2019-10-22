@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { bem } from '../utils/index'
-import './index.less'
+import { bem } from '../../utils/index'
+import '../index.less'
 
 const styles = bem('player')
 

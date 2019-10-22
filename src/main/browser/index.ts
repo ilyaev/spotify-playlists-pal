@@ -47,7 +47,7 @@ export class AppBrowserWindow {
     }
 
     hide() {
-        if (this.state.win) {
+        if (this.state.win && this.state.win.isVisible()) {
             this.send('WINDOW_HIDE', this.state.stateId)
             this.state.win.hide()
         }

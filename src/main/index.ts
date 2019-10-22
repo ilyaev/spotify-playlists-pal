@@ -23,6 +23,8 @@ import {
     SpotifyFavoriteList,
     BrowserState,
     AppBrowserOptions,
+    SpotifyArtist,
+    SpotifyTrack,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
@@ -33,6 +35,8 @@ import fetch from 'node-fetch'
 import { isDev } from '../main'
 
 let INSTANCE_ID = 'atz'
+
+const CACHE = {}
 
 interface AppOptions {
     isDev: boolean
@@ -109,14 +113,20 @@ export class AppWindow {
             spotifyApi.pause()
         })
 
-        ipcMain.on(SpotifyEvents.Play, (_event, uri?: string) => {
-            spotifyApi.play(
-                uri
-                    ? {
-                          context_uri: uri,
-                      }
-                    : undefined
-            )
+        ipcMain.on(SpotifyEvents.Play, (_event, uri?: any, type?: string) => {
+            spotifyApi
+                .play(
+                    type && type === 'track'
+                        ? { uris: [].concat(uri) }
+                        : uri
+                        ? {
+                              context_uri: uri,
+                          }
+                        : undefined
+                )
+                .catch(e => {
+                    console.log(e)
+                })
         })
 
         ipcMain.on(SpotifyEvents.Next, () => {
@@ -139,6 +149,25 @@ export class AppWindow {
             spotifyApi.setRepeat({
                 state: this.playbackState.repeat_state === 'off' ? 'context' : 'off',
             })
+        })
+
+        ipcMain.on(SpotifyEvents.ArtistInfo, async (_event, id) => {
+            const cacheID = SpotifyEvents.ArtistInfo + '_' + id
+            const [artist, tracks] =
+                typeof CACHE[cacheID] === 'undefined'
+                    ? await Promise.all([
+                          spotifyApi.getArtist(id).then(res => res.body) as Promise<SpotifyArtist>,
+                          spotifyApi.getArtistTopTracks(id, 'US').then(res => res.body) as Promise<SpotifyTrack[]>,
+                      ])
+                    : CACHE[cacheID]
+
+            CACHE[cacheID] = [artist, tracks]
+
+            this.browser.send(SpotifyEvents.ArtistInfo, artist, tracks)
+        })
+
+        ipcMain.on(SpotifyEvents.PlayContextURI, (_event, uri) => {
+            this.onPlaylistClick({ uri } as SpotifyPlaylist)
         })
 
         ipcMain.on('DEBUG', (event, data) => {
@@ -267,18 +296,16 @@ export class AppWindow {
 
     async loadPlaylists() {
         const [playlists, recent, albums] = await Promise.all([
-            spotifyApi
-                .getUserPlaylists(undefined, { limit: 50 })
-                .then(res => res.body.items || [])
-                .catch(_e => []) as Promise<SpotifyPlaylist[]>,
+            this.playlists.loadAllPlaylist(),
             spotifyApi
                 .getMyRecentlyPlayedTracks({ limit: 50 })
                 .then(res => res.body.items || [])
                 .catch(_e => []) as Promise<SpotifyRecentItem[]>,
-            spotifyApi
-                .getMySavedAlbums({ limit: 50 })
-                .then(res => res.body.items.map(one => one.album))
-                .catch(_e => []) as Promise<SpotifyAlbum[]>,
+            this.playlists.loadAllSavedAlbums(),
+            // spotifyApi
+            //     .getMySavedAlbums({ limit: 50 })
+            //     .then(res => res.body.items.map(one => one.album))
+            //     .catch(_e => []) as Promise<SpotifyAlbum[]>,
         ])
 
         const db = (await this.loadItem('SPOTIFY_FAVORITES')) || '[]'

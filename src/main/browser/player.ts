@@ -32,7 +32,7 @@ export class AppBrowserStatePlayer implements AppBrowserState {
 
         isDev ||
             this.win.on('blur', () => {
-                this.win.hide()
+                this.onExit()
             })
     }
 

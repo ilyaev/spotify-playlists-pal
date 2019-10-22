@@ -112,7 +112,7 @@ export class AppSpotify extends React.Component<Props, State> {
                 ipcRenderer.send(SpotifyEvents.Pause)
                 break
             case PlayerAction.Play:
-                ipcRenderer.send(SpotifyEvents.Play)
+                ipcRenderer.send(SpotifyEvents.Play, data || undefined, data ? 'track' : undefined)
                 break
             case PlayerAction.Next:
                 ipcRenderer.send(SpotifyEvents.Next)
@@ -128,6 +128,9 @@ export class AppSpotify extends React.Component<Props, State> {
                 break
             case PlayerAction.ToggleRepeat:
                 ipcRenderer.send(SpotifyEvents.ToggleRepeat)
+                break
+            case PlayerAction.PlayContextURI:
+                ipcRenderer.send(SpotifyEvents.PlayContextURI, data || '')
                 break
             default:
         }

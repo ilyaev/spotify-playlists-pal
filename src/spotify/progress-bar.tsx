@@ -2,7 +2,6 @@ import * as React from 'react'
 import { bem, msToString } from '../utils'
 
 import './index.less'
-import { ipcRenderer } from 'electron'
 
 const styles = bem('progressbar')
 
@@ -34,7 +33,12 @@ export class PlayerProgressBar extends React.Component<Props, State> {
         if (!newProps.active && this.progressId) {
             clearInterval(this.progressId)
         }
-        if (newProps.startFrom !== this.state.position || newProps.active !== this.props.active) {
+        if (
+            newProps === this.props ||
+            newProps.startFrom !== this.props.startFrom ||
+            newProps.active !== this.props.active ||
+            newProps.total !== this.props.total
+        ) {
             this.setState({
                 current: newProps.startFrom,
                 position: Math.floor((newProps.startFrom / newProps.total) * 100),
@@ -47,11 +51,13 @@ export class PlayerProgressBar extends React.Component<Props, State> {
         if (this.progressId) {
             clearInterval(this.progressId)
         }
-        this.progressId = setTimeout(() => {
+        this.progressId = setInterval(() => {
             const newCurrent = this.state.current + 1000
             const newPosition = Math.floor((newCurrent / this.props.total) * 100)
             this.setState({ current: newCurrent, position: newPosition })
-            newPosition < 100 && this.forwardProgress()
+            if (newPosition >= 100) {
+                clearInterval(this.progressId)
+            }
             // ipcRenderer.send('DEBUG', 'TICK')
         }, 1000)
     }

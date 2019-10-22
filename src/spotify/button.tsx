@@ -10,6 +10,7 @@ interface Props {
     width?: number
     green?: boolean
     flip?: boolean
+    className?: string
 }
 export const SvgButton = (props: Props) => {
     return (
@@ -17,11 +18,15 @@ export const SvgButton = (props: Props) => {
             src={`static/btn_${props.img}.svg`}
             width={props.width || 50}
             height={props.width || 50}
-            className={styles('button', {
-                flip: props.flip ? true : false,
-                green: props.green || false,
-                noclick: props.onClick ? false : true,
-            })}
+            className={
+                styles('button', {
+                    flip: props.flip ? true : false,
+                    green: props.green || false,
+                    noclick: props.onClick ? false : true,
+                }) +
+                ' ' +
+                (props.className || '')
+            }
             onClick={props.onClick ? () => props.onClick() : undefined}
         />
     )

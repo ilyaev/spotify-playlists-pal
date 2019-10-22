@@ -12,7 +12,12 @@ export interface Settings {
 export interface SpotifyArtist {
     name: string
     uri: string
+    id: string
     type: string
+    genres: string[]
+    images: { url: string; width: number; height: number }[]
+    popularity: number
+    followers: { url: string; total: number }
     external_urls: any[]
 }
 
@@ -25,16 +30,25 @@ export interface SpotifyAlbum {
     total_tracks: number
     artists: SpotifyArtist[]
 }
+
+export interface SpotifyTrack {
+    type: string
+    uri: string
+    name: string
+    preview_url: string
+    artists: SpotifyArtist[]
+    album: SpotifyAlbum
+    duration_ms: number
+    explicit: boolean
+    is_local: boolean
+    is_playable: boolean
+    popularity: number
+    track_number: number
+}
+
 export interface SpotifyRecentItem {
     played_at: string
-    track: {
-        type: string
-        uri: string
-        name: string
-        preview_url: string
-        artists: SpotifyArtist[]
-        album: SpotifyAlbum
-    }
+    track: SpotifyTrack
     context: {
         type: string
         uri: string
@@ -127,6 +141,8 @@ export enum SpotifyEvents {
     CancelSettings = 'SPOTIFY-CANCEL-SETTINGS',
     ToggleShuffle = 'SPOTIFY-TOGGLE-SHUFFLE',
     ToggleRepeat = 'SPOTIFY-TOGGLE-REPEAT',
+    ArtistInfo = 'SPOTIFY-ARTIST-INFO',
+    PlayContextURI = 'SPOTIFY-PLAY-CONTEXT-URI',
 }
 
 export enum BrowserState {
@@ -143,6 +159,7 @@ export enum PlayerAction {
     Rewind = 'PLAYER-REWIND',
     ToggleShuffle = 'PLAYER-TOGGLE-SHUFFLE',
     ToggleRepeat = 'PLAYER-TOGGLE-REPEAT',
+    PlayContextURI = 'PLAYER-PLAY-CONTEXT-URI',
 }
 
 export interface AppBrowserOptions extends LoadFileOptions {
@@ -157,4 +174,9 @@ export interface AppBrowserState {
     onExit: () => void
     onEnter: (options?: AppBrowserOptions, refresh?: true) => void
     auth: (url: string) => void
+}
+
+export enum PlayerMode {
+    Track = 'PLAYER-MODE-TRACK',
+    Artist = 'PLAYER-MODE-ARTIST',
 }

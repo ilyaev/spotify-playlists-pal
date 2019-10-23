@@ -1,5 +1,11 @@
 import { BrowserWindowConstructorOptions, BrowserWindow, LoadFileOptions } from 'electron'
 
+export interface SpotifyImage {
+    url: string
+    height: number
+    width: number
+}
+
 export interface Settings {
     max_size: string
     order_recent_playlist: string
@@ -14,7 +20,7 @@ export interface SpotifyArtist {
     id: string
     type: string
     genres: string[]
-    images: { url: string; width: number; height: number }[]
+    images: SpotifyImage[]
     popularity: number
     followers: { url: string; total: number }
     external_urls: any[]
@@ -23,11 +29,21 @@ export interface SpotifyArtist {
 export interface SpotifyAlbum {
     uri: string
     release_date: string
+    release_date_precision: string
+    type: string
     name: string
-    images: any[]
+    label: string
+    popularity: number
+    images: SpotifyImage[]
     album_type: string
+    id: string
     total_tracks: number
     artists: SpotifyArtist[]
+    genres: string[]
+    tracks: {
+        items: SpotifyTrack[]
+        total: number
+    }
 }
 
 export interface SpotifyTrack {
@@ -61,7 +77,7 @@ export interface SpotifyMe {
         spotify: string
     }
     id: string
-    images: { url: string }[]
+    images: SpotifyImage[]
     product: string
     type: string
     uri: string
@@ -71,7 +87,7 @@ export interface SpotifyPlaylist {
     id: string
     name: string
     uri: string
-    images: { url: string }[]
+    images: SpotifyImage[]
     tracks: { total: number; href: string }
     total_tracks: number
     owner: {
@@ -141,6 +157,7 @@ export enum SpotifyEvents {
     ToggleShuffle = 'SPOTIFY-TOGGLE-SHUFFLE',
     ToggleRepeat = 'SPOTIFY-TOGGLE-REPEAT',
     ArtistInfo = 'SPOTIFY-ARTIST-INFO',
+    AlbumInfo = 'SPOTIFY-ALBUM-INFO',
     PlayContextURI = 'SPOTIFY-PLAY-CONTEXT-URI',
     PlayGenre = 'SPOTIFY-PLAY-GENRE',
 }
@@ -180,4 +197,12 @@ export interface AppBrowserState {
 export enum PlayerMode {
     Track = 'PLAYER-MODE-TRACK',
     Artist = 'PLAYER-MODE-ARTIST',
+}
+
+export interface PlayerVisualState {
+    stateId: string
+    render: () => React.ReactNode
+    onEnter: () => void
+    onExit: () => void
+    mouseHover: boolean
 }

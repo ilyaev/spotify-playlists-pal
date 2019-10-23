@@ -1,10 +1,19 @@
 import * as React from 'react'
 import { bem, waitForTime } from '../../utils'
-import { SpotifyPlaybackState, PlayerAction, SpotifyEvents, SpotifyArtist, SpotifyTrack, PlayerMode } from '../../utils/types'
+import {
+    SpotifyPlaybackState,
+    PlayerAction,
+    SpotifyEvents,
+    SpotifyArtist,
+    SpotifyTrack,
+    PlayerMode,
+    PlayerVisualState,
+    SpotifyAlbum,
+} from '../../utils/types'
 import { SvgButton } from './button'
 import { PlayerProgressBar } from './progress-bar'
-import { PlayerArtistInfo } from './artist'
-import { ProgressCircle } from 'react-desktop'
+import { ArtistOverlayState } from './visual-state/artist-overlay'
+import { AlbumOverlayState } from './visual-state/album-overlay'
 
 import '../index.less'
 import { ipcRenderer } from 'electron'
@@ -18,27 +27,45 @@ interface Props {
     onPlayerAction: (action: PlayerAction, ...arg1s: any) => void
 }
 
-interface State {
+export interface State {
     progress: number
     total: number
     artist: SpotifyArtist
+    album: SpotifyAlbum
     artistTopTracks: SpotifyTrack[]
-    artistLoaded: boolean
     mode: PlayerMode
+    artistId: string
+    albumId: string
     hideArtist: boolean
+    vstate: string | 'DEFAULT' | 'ARTIST' | 'ALBUM'
 }
 
 export class PagePlayer extends React.Component<Props, State> {
     waitId: any
+    vstates: PlayerVisualState[]
 
     state: State = {
         progress: 0,
+        artistId: '',
+        albumId: '',
         total: 0,
         mode: PlayerMode.Track,
         artist: {} as SpotifyArtist,
+        album: {} as SpotifyAlbum,
         artistTopTracks: [],
-        artistLoaded: false,
         hideArtist: true,
+        vstate: 'DEFAULT',
+    }
+
+    constructor(...args: any) {
+        super(args)
+        const vstateOptions = {
+            getState: () => this.state,
+            getOnAction: () => this.props.onPlayerAction,
+            exitState: this.exitVisualState.bind(this),
+        }
+
+        this.vstates = [new ArtistOverlayState(vstateOptions), new AlbumOverlayState(vstateOptions)]
     }
 
     componentDidMount() {
@@ -46,8 +73,10 @@ export class PagePlayer extends React.Component<Props, State> {
             this.setState({
                 artist,
                 artistTopTracks: top10.tracks || [],
-                artistLoaded: true,
             })
+        })
+        ipcRenderer.on(SpotifyEvents.AlbumInfo, (_event, album: SpotifyAlbum) => {
+            this.setState({ album })
         })
     }
 
@@ -62,6 +91,8 @@ export class PagePlayer extends React.Component<Props, State> {
             this.setState({
                 progress: newProps.playbackState.progress_ms,
                 total: newProps.playbackState.item.duration_ms,
+                artistId: newProps.playbackState.item.artists[0].id,
+                albumId: newProps.playbackState.item.album.id,
                 mode: this.state.hideArtist ? PlayerMode.Track : this.state.mode,
             })
             newProps.active &&
@@ -99,7 +130,7 @@ export class PagePlayer extends React.Component<Props, State> {
 
         return (
             <div className={styles()}>
-                {this.state.mode === PlayerMode.Artist && this.renderArtistInfo()}
+                {this.renderVisualState()}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className={styles('track_controls')}>
                         <SvgButton
@@ -145,11 +176,8 @@ export class PagePlayer extends React.Component<Props, State> {
         return (
             <div className={styles('context')}>
                 <span
-                    onMouseEnter={this.contextTooltip.bind(this)}
-                    onMouseLeave={() => {
-                        this.setState({ hideArtist: true })
-                        this.hideContextTooltip(1000)
-                    }}
+                    onMouseEnter={() => this.setVisualState('ARTIST')}
+                    onMouseLeave={() => this.exitVisualState()}
                     className={styles('context-artist')}
                 >
                     {artistName}
@@ -157,6 +185,8 @@ export class PagePlayer extends React.Component<Props, State> {
                 &nbsp;-&nbsp;
                 <div
                     className={styles('context-album')}
+                    onMouseEnter={() => this.setVisualState('ALBUM')}
+                    onMouseLeave={() => this.exitVisualState()}
                     onClick={() => {
                         this.props.onPlayerAction(PlayerAction.PlayContextURI, uri)
                     }}
@@ -168,34 +198,45 @@ export class PagePlayer extends React.Component<Props, State> {
         )
     }
 
-    renderArtistInfo() {
-        return (
-            <div
-                className={styles('artist')}
-                onMouseEnter={() => {
-                    this.setState({ hideArtist: false })
-                }}
-                onMouseLeave={() => {
-                    this.setState({ hideArtist: true })
-                    this.hideContextTooltip(500)
-                }}
-            >
-                {this.state.artistLoaded ? (
-                    <PlayerArtistInfo artist={this.state.artist} top10={this.state.artistTopTracks} onAction={this.props.onPlayerAction} />
-                ) : (
-                    <ProgressCircle size={25} />
-                )}
-            </div>
-        )
+    renderVisualState() {
+        const vstate = this.getCurrentVisualState()
+        if (!vstate) {
+            return null
+        }
+        return vstate.render()
     }
 
-    async hideContextTooltip(ms: number = 0) {
-        await waitForTime(ms)
-        this.state.hideArtist && this.setState({ mode: PlayerMode.Track, hideArtist: true })
+    async setVisualState(newState: string) {
+        const vstate = this.getCurrentVisualState()
+        if (newState === this.state.vstate) {
+            if (vstate) {
+                vstate.onEnter()
+            }
+            return
+        }
+        if (vstate) {
+            vstate.onExit()
+        }
+
+        this.setState({ vstate: newState }, () => {
+            const nextVState = this.getCurrentVisualState()
+            nextVState && nextVState.onEnter()
+        })
     }
 
-    contextTooltip() {
-        this.setState({ artistLoaded: false, mode: PlayerMode.Artist, hideArtist: false })
-        ipcRenderer.send(SpotifyEvents.ArtistInfo, this.props.playbackState.item.artists[0].id)
+    getCurrentVisualState() {
+        return this.vstates.find(one => one.stateId === this.state.vstate)
+    }
+
+    async exitVisualState(nextState?: string) {
+        const lastStateId = '' + this.state.vstate
+        const lastState = this.getCurrentVisualState()
+        if (lastState) {
+            lastState.mouseHover = false
+        }
+        await waitForTime(500)
+        if (lastStateId === this.state.vstate && lastState && !lastState.mouseHover) {
+            this.setVisualState(nextState || 'DEFAULT')
+        }
     }
 }

@@ -166,6 +166,18 @@ export class AppWindow {
             this.browser.send(SpotifyEvents.ArtistInfo, artist, tracks)
         })
 
+        ipcMain.on(SpotifyEvents.AlbumInfo, async (_event, id) => {
+            const cacheID = SpotifyEvents.AlbumInfo + '_' + id
+            const [album] =
+                typeof CACHE[cacheID] === 'undefined'
+                    ? await Promise.all([spotifyApi.getAlbum(id).then(res => res.body) as Promise<SpotifyAlbum>])
+                    : CACHE[cacheID]
+
+            CACHE[cacheID] = [album]
+
+            this.browser.send(SpotifyEvents.AlbumInfo, album)
+        })
+
         ipcMain.on(SpotifyEvents.PlayContextURI, (_event, uri) => {
             this.onPlaylistClick({ uri } as SpotifyPlaylist)
         })

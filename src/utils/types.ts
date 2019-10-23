@@ -142,6 +142,7 @@ export enum SpotifyEvents {
     ToggleRepeat = 'SPOTIFY-TOGGLE-REPEAT',
     ArtistInfo = 'SPOTIFY-ARTIST-INFO',
     PlayContextURI = 'SPOTIFY-PLAY-CONTEXT-URI',
+    PlayGenre = 'SPOTIFY-PLAY-GENRE',
 }
 
 export enum BrowserState {
@@ -159,6 +160,7 @@ export enum PlayerAction {
     ToggleShuffle = 'PLAYER-TOGGLE-SHUFFLE',
     ToggleRepeat = 'PLAYER-TOGGLE-REPEAT',
     PlayContextURI = 'PLAYER-PLAY-CONTEXT-URI',
+    PlayGenre = 'PLAYER-PLAY-GENRE',
 }
 
 export interface AppBrowserOptions extends LoadFileOptions {

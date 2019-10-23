@@ -32,6 +32,8 @@
         // border: 1px solid gray;
         margin-right: 20px;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
     }
 
     &_track_container {
@@ -110,7 +112,7 @@
 
     &_artist {
         position: absolute;
-        top: 90px;
+        top: 92px;
         z-index: 10;
         width: 298px;
         height: 300px;
@@ -178,19 +180,56 @@
 .artistinfo {
     padding: 10px;
     display: flex;
+    flex-direction: column;
+
+    &_bottom {
+        display: flex;
+    }
+
+    &_title {
+        text-align: center;
+        font-size: large;
+        flex: 1;
+        margin-bottom: 10px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    &_bottom-column {
+        margin-top: 10px;
+        flex: 1;
+        text-align: center;
+    }
+
+    &_genre {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        width: 100px;
+    }
+
+    &_genre:hover {
+        text-decoration: underline;
+        color: blue;
+        cursor: pointer;
+    }
+
     &_name {
         font-size: x-large;
     }
 
     &_img {
         cursor: pointer;
+        max-height: 100px;
+        overflow: hidden;
     }
 
     &_img_play {
         position: absolute;
         filter: invert(100%) sepia(1%) saturate(4215%) hue-rotate(58deg) brightness(116%) contrast(100%);
         left: 25px;
-        top: 25px;
+        top: 67px;
     }
 
     &_img &_img_play {
@@ -199,6 +238,10 @@
 
     &_img:hover &_img_play {
         visibility: visible;
+    }
+
+    &_bignumber {
+        font-size: xx-large;
     }
 
     &_track {

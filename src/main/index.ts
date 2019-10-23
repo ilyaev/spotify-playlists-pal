@@ -170,6 +170,16 @@ export class AppWindow {
             this.onPlaylistClick({ uri } as SpotifyPlaylist)
         })
 
+        ipcMain.on(SpotifyEvents.PlayGenre, async (_event, genre: string) => {
+            console.log('Playe: ', genre)
+            const list = await spotifyApi
+                .getRecommendations({
+                    seed_genres: [genre.replace(/\s/gi, '_')],
+                })
+                .then(res => res.body.tracks)
+            console.log(list.length, list.map(one => `${one.name} - ${one.artists[0].name}`))
+        })
+
         ipcMain.on('DEBUG', (event, data) => {
             console.log('DEBUG: ', data)
         })

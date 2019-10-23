@@ -69,6 +69,7 @@
     "express": "^4.17.1",
     "konva": "^4.0.12",
     "node-fetch": "^2.6.0",
+    "react-contextmenu": "^2.11.0",
     "react-tooltip": "^3.11.1",
     "spotify-node-applescript": "^1.1.1"
   }

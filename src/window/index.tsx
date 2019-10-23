@@ -132,6 +132,9 @@ export class AppSpotify extends React.Component<Props, State> {
             case PlayerAction.PlayContextURI:
                 ipcRenderer.send(SpotifyEvents.PlayContextURI, data || '')
                 break
+            case PlayerAction.PlayGenre:
+                ipcRenderer.send(SpotifyEvents.PlayGenre, data || '')
+                break
             default:
         }
         waitForTime(1000).then(() => ipcRenderer.send(SpotifyEvents.SendState, true))

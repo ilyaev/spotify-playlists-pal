@@ -45,7 +45,7 @@ export class AppBrowserStatePlayer implements AppBrowserState {
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {
         if (options && options.position) {
-            this.win.setPosition(options.position.x - Math.floor(this.config.width / 2) + 2, options.position.y, false)
+            this.win.setPosition(options.position.x - Math.floor(this.config.width / 2) + 2 + 10, options.position.y, false)
         } else {
             this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
         }

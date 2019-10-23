@@ -15,7 +15,7 @@ interface Props {
     playbackState: SpotifyPlaybackState
     active: boolean
     updatePlaybackState: () => void
-    onPlayerAction: (action: PlayerAction, ...args: any) => void
+    onPlayerAction: (action: PlayerAction, ...arg1s: any) => void
 }
 
 interface State {

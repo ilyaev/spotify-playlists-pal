@@ -11,8 +11,8 @@ import {
     Button,
     ProgressCircle,
 } from 'react-desktop/macOs'
-import { SETTINGS_STORAGE_KEY, SETTINGS_DEFAULTS } from '../utils/const'
-import { Settings, SpotifyPlaylist, SpotifyMe, BrowserState } from '../utils/types'
+import { SETTINGS_STORAGE_KEY, SETTINGS_DEFAULTS } from 'utils/const'
+import { Settings, SpotifyPlaylist, SpotifyMe, BrowserState } from 'utils/types'
 
 interface Props {
     onApply: () => void

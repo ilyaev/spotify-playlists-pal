@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { bem, waitForTime } from '../utils'
-import { SpotifyPlaylist, SpotifyEvents, SpotifyMe, SpotifyPlaybackState, BrowserState, PlayerAction } from '../utils/types'
+import { bem, waitForTime } from 'src/utils'
+import { SpotifyPlaylist, SpotifyEvents, SpotifyMe, SpotifyPlaybackState, BrowserState, PlayerAction } from 'utils/types'
 import { ipcRenderer } from 'electron'
 import { ProgressCircle, View } from 'react-desktop/macOs'
 import { PageSettings } from './settings'

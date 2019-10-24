@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const nodeExternals = require('webpack-node-externals')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const path = require('path')
 
 module.exports = (env, args) => [
     {
@@ -10,6 +11,10 @@ module.exports = (env, args) => [
         devtool: env === 'prod' ? undefined : 'source-map',
         resolve: {
             extensions: ['.ts', '.tsx', '.js'],
+            alias: {
+                src: path.resolve(__dirname, 'src/'),
+                utils: path.resolve(__dirname, 'src/utils/'),
+            },
         },
         module: {
             rules: [

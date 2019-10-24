@@ -25,6 +25,7 @@ import {
     AppBrowserOptions,
     SpotifyArtist,
     SpotifyTrack,
+    SpotifyTrackFeatures,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
@@ -176,6 +177,21 @@ export class AppWindow {
             CACHE[cacheID] = [album]
 
             this.browser.send(SpotifyEvents.AlbumInfo, album)
+        })
+
+        ipcMain.on(SpotifyEvents.TrackInfo, async (_event, id) => {
+            const cacheID = SpotifyEvents.TrackInfo + '_' + id
+            const [features] =
+                typeof CACHE[cacheID] === 'undefined'
+                    ? await Promise.all([
+                          spotifyApi.getAudioFeaturesForTrack(id).then(res => res.body) as Promise<SpotifyTrackFeatures>,
+                          //   spotifyApi.getAudioAnalysisForTrack(id).then(res => res.body) as Promise<SpotifyTrack>,
+                      ])
+                    : CACHE[cacheID]
+
+            CACHE[cacheID] = [features]
+
+            this.browser.send(SpotifyEvents.TrackInfo, features)
         })
 
         ipcMain.on(SpotifyEvents.PlayContextURI, (_event, uri) => {

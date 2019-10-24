@@ -1,5 +1,26 @@
 import { BrowserWindowConstructorOptions, BrowserWindow, LoadFileOptions } from 'electron'
 
+export interface SpotifyTrackFeatures {
+    acousticness: number
+    analysis_url: string
+    danceability: number
+    duration_ms: number
+    energy: number
+    id: string
+    instrumentalness: number
+    key: number
+    liveness: number
+    loudness: number
+    mode: number
+    speechiness: number
+    tempo: number
+    time_signature: number
+    track_href: string
+    type: string
+    uri: string
+    valence: number
+}
+
 export interface SpotifyImage {
     url: string
     height: number
@@ -50,6 +71,7 @@ export interface SpotifyTrack {
     type: string
     uri: string
     name: string
+    id: string
     preview_url: string
     artists: SpotifyArtist[]
     album: SpotifyAlbum
@@ -106,15 +128,7 @@ export interface SpotifyPlaybackState {
     is_playing: boolean
     shuffle_state: boolean
     repeat_state: 'off' | 'context'
-    item: {
-        type: string
-        uri: string
-        name: string
-        preview_url: string
-        artists: SpotifyArtist[]
-        duration_ms: number
-        album: SpotifyAlbum
-    }
+    item: SpotifyTrack
     device: {
         id: string
         is_active: boolean
@@ -158,6 +172,7 @@ export enum SpotifyEvents {
     ToggleRepeat = 'SPOTIFY-TOGGLE-REPEAT',
     ArtistInfo = 'SPOTIFY-ARTIST-INFO',
     AlbumInfo = 'SPOTIFY-ALBUM-INFO',
+    TrackInfo = 'SPOTIFY-TRACK-INFO',
     PlayContextURI = 'SPOTIFY-PLAY-CONTEXT-URI',
     PlayGenre = 'SPOTIFY-PLAY-GENRE',
 }
@@ -199,8 +214,15 @@ export enum PlayerMode {
     Artist = 'PLAYER-MODE-ARTIST',
 }
 
+export enum PlayerVisualStateId {
+    Default = 'DEFAULT',
+    Artist = 'ARTIST',
+    Album = 'ALBUM',
+    Track = 'TRACK',
+}
+
 export interface PlayerVisualState {
-    stateId: string
+    stateId: PlayerVisualStateId
     render: () => React.ReactNode
     onEnter: () => void
     onExit: () => void

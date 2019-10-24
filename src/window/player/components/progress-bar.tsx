@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { bem, msToString } from '../../utils'
+import { bem, msToString } from 'src/utils'
 
-import '../index.less'
+import '../../index.less'
 
 const styles = bem('progressbar')
 

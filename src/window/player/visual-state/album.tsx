@@ -1,27 +1,28 @@
 import * as React from 'react'
-import { SpotifyArtist, SpotifyTrack, PlayerAction } from '../../utils/types'
-import { bem } from '../../utils'
+import { SpotifyTrack, PlayerAction, SpotifyAlbum } from 'utils/types'
+import { bem } from 'src/utils'
 
-import '../index.less'
-import { SvgButton } from './button'
+import '../../index.less'
+import { SvgButton } from '../components/button'
 
 const styles = bem('artistinfo')
 
 interface Props {
-    artist: SpotifyArtist
-    top10: SpotifyTrack[]
+    album: SpotifyAlbum
     onAction: (action: PlayerAction, ...args) => void
 }
 
 interface State {}
 
-export class PlayerArtistInfo extends React.Component<Props, State> {
+export class PlayerAlbumInfo extends React.Component<Props, State> {
     state: State = {}
 
     render() {
         return (
             <div className={styles()}>
-                <div className={styles('title')}>{this.props.artist.name}</div>
+                <div className={styles('title')} title={this.props.album.name}>
+                    {this.props.album.name}
+                </div>
                 <div style={{ display: 'flex' }}>
                     <div>
                         <div className={styles('img')}>
@@ -31,9 +32,9 @@ export class PlayerArtistInfo extends React.Component<Props, State> {
                                 width={50}
                                 onClick={this.onPlayTrack.bind(this, undefined)}
                             />
-                            {this.props.artist.images[0] ? <img width={100} src={this.props.artist.images[0].url} /> : <div>No Image</div>}
+                            {this.props.album.images[0] ? <img width={100} src={this.props.album.images[0].url} /> : <div>No Image</div>}
                         </div>
-                        {this.props.artist.genres
+                        {this.props.album.genres
                             .map(genre => (
                                 <div className={styles('genre')} key={genre} title={genre} onClick={this.onGenreClick.bind(this, genre)}>
                                     {genre[0].toUpperCase() + genre.substr(1)}
@@ -42,7 +43,7 @@ export class PlayerArtistInfo extends React.Component<Props, State> {
                             .slice(0, 5)}
                     </div>
                     <div className={styles('top')}>
-                        {this.props.top10.map((one, index) => (
+                        {this.props.album.tracks.items.map((one, index) => (
                             <div key={'td_' + index} className={styles('track')}>
                                 <div>
                                     <SvgButton
@@ -61,11 +62,11 @@ export class PlayerArtistInfo extends React.Component<Props, State> {
                 </div>
                 <div className={styles('bottom')}>
                     <div className={styles('bottom-column')}>
-                        <div className={styles('bignumber')}>{this.props.artist.followers.total.toLocaleString()}</div>
-                        <div>Followers</div>
+                        <div className={styles('bignumber')}>{this.formatReleaseDate()}</div>
+                        <div>Release Date</div>
                     </div>
                     <div className={styles('bottom-column')}>
-                        <div className={styles('bignumber')}>{this.props.artist.popularity}</div>
+                        <div className={styles('bignumber')}>{this.props.album.popularity}</div>
                         <div>Popularity</div>
                     </div>
                 </div>
@@ -73,8 +74,13 @@ export class PlayerArtistInfo extends React.Component<Props, State> {
         )
     }
 
+    formatReleaseDate() {
+        const its = this.props.album.release_date.split('-')
+        return its[1] ? its[1] + '/' + its[0] : its[0] || 'Unknown'
+    }
+
     onPlayTrack(track?: SpotifyTrack) {
-        this.props.onAction(PlayerAction.Play, track ? track.uri : this.props.top10.map(one => one.uri))
+        this.props.onAction(PlayerAction.Play, track ? track.uri : this.props.album.tracks.items.map(one => one.uri))
     }
 
     onGenreClick(genre) {

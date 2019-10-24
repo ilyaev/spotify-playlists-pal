@@ -3,15 +3,15 @@ import { PlayerVisualState, SpotifyEvents, PlayerVisualStateId } from 'utils/typ
 import { BaseOverlayState } from './base'
 import { ProgressCircle } from 'react-desktop'
 import { ipcRenderer } from 'electron'
-import { PlayerAlbumInfo } from './album'
+import { PlayerTrackInfo } from './track'
 
-export class AlbumOverlayState extends BaseOverlayState implements PlayerVisualState {
-    stateId = PlayerVisualStateId.Album
+export class TrackOverlayState extends BaseOverlayState implements PlayerVisualState {
+    stateId = PlayerVisualStateId.Track
 
     render() {
         return this.renderWithOverlay(
-            this.getState().album.name ? (
-                <PlayerAlbumInfo album={this.getState().album} onAction={this.options.getOnAction()} />
+            this.getState().features.id === this.getState().trackId ? (
+                <PlayerTrackInfo track={this.getState().track} onAction={this.options.getOnAction()} features={this.getState().features} />
             ) : (
                 <ProgressCircle size={25} />
             )
@@ -19,8 +19,8 @@ export class AlbumOverlayState extends BaseOverlayState implements PlayerVisualS
     }
 
     onEnter() {
-        ipcRenderer.send(SpotifyEvents.AlbumInfo, this.getState().albumId)
         this.mouseHover = true
+        ipcRenderer.send(SpotifyEvents.TrackInfo, this.getState().trackId)
     }
 
     onExit() {

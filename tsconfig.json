@@ -1,12 +1,16 @@
 {
-    "compilerOptions": {
-        "jsx": "react",
-        "module": "commonjs",
-        "target": "es2016",
-        "noImplicitAny": false,
-        "sourceMap": true,
-        "moduleResolution": "node",
-        "lib": ["es2016", "dom"],
-        "baseUrl": "."
+  "compilerOptions": {
+    "jsx": "react",
+    "module": "commonjs",
+    "target": "es2016",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "lib": ["es2016", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "utils/*": ["src/utils/*"],
+      "src/*": ["src/*"]
     }
+  }
 }

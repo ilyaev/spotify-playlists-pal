@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { bem, waitForTime } from '../../utils'
+import { bem, waitForTime } from 'src/utils'
 import {
     SpotifyPlaybackState,
     PlayerAction,
@@ -9,11 +9,14 @@ import {
     PlayerMode,
     PlayerVisualState,
     SpotifyAlbum,
+    PlayerVisualStateId,
+    SpotifyTrackFeatures,
 } from '../../utils/types'
-import { SvgButton } from './button'
-import { PlayerProgressBar } from './progress-bar'
+import { SvgButton } from './components/button'
+import { PlayerProgressBar } from './components/progress-bar'
 import { ArtistOverlayState } from './visual-state/artist-overlay'
 import { AlbumOverlayState } from './visual-state/album-overlay'
+import { TrackOverlayState } from './visual-state/track-overlay'
 
 import '../index.less'
 import { ipcRenderer } from 'electron'
@@ -32,12 +35,15 @@ export interface State {
     total: number
     artist: SpotifyArtist
     album: SpotifyAlbum
+    track: SpotifyTrack
     artistTopTracks: SpotifyTrack[]
     mode: PlayerMode
+    features: SpotifyTrackFeatures
     artistId: string
     albumId: string
+    trackId: string
     hideArtist: boolean
-    vstate: string | 'DEFAULT' | 'ARTIST' | 'ALBUM'
+    vstate: PlayerVisualStateId
 }
 
 export class PagePlayer extends React.Component<Props, State> {
@@ -48,13 +54,16 @@ export class PagePlayer extends React.Component<Props, State> {
         progress: 0,
         artistId: '',
         albumId: '',
+        trackId: '',
         total: 0,
         mode: PlayerMode.Track,
         artist: {} as SpotifyArtist,
         album: {} as SpotifyAlbum,
+        track: {} as SpotifyTrack,
+        features: {} as SpotifyTrackFeatures,
         artistTopTracks: [],
         hideArtist: true,
-        vstate: 'DEFAULT',
+        vstate: PlayerVisualStateId.Default,
     }
 
     constructor(...args: any) {
@@ -65,7 +74,7 @@ export class PagePlayer extends React.Component<Props, State> {
             exitState: this.exitVisualState.bind(this),
         }
 
-        this.vstates = [new ArtistOverlayState(vstateOptions), new AlbumOverlayState(vstateOptions)]
+        this.vstates = [new ArtistOverlayState(vstateOptions), new AlbumOverlayState(vstateOptions), new TrackOverlayState(vstateOptions)]
     }
 
     componentDidMount() {
@@ -78,6 +87,9 @@ export class PagePlayer extends React.Component<Props, State> {
         ipcRenderer.on(SpotifyEvents.AlbumInfo, (_event, album: SpotifyAlbum) => {
             this.setState({ album })
         })
+        ipcRenderer.on(SpotifyEvents.TrackInfo, (_event, features: SpotifyTrackFeatures) => {
+            this.setState({ features })
+        })
     }
 
     componentWillReceiveProps(newProps: Props) {
@@ -88,17 +100,20 @@ export class PagePlayer extends React.Component<Props, State> {
         const restMs = newProps.playbackState.item ? newProps.playbackState.item.duration_ms - newProps.playbackState.progress_ms : 0
 
         if (restMs > 0 && newProps.playbackState && newProps.playbackState.progress_ms > 0) {
-            this.setState({
-                progress: newProps.playbackState.progress_ms,
-                total: newProps.playbackState.item.duration_ms,
-                artistId: newProps.playbackState.item.artists[0].id,
-                albumId: newProps.playbackState.item.album.id,
-                mode: this.state.hideArtist ? PlayerMode.Track : this.state.mode,
-            })
-            newProps.active &&
-                waitForTime(1).then(() => {
-                    this.waitForNext(restMs + 2000)
-                })
+            this.setState(
+                {
+                    progress: newProps.playbackState.progress_ms,
+                    total: newProps.playbackState.item.duration_ms,
+                    artistId: newProps.playbackState.item.artists[0].id,
+                    trackId: newProps.playbackState.item.id,
+                    albumId: newProps.playbackState.item.album.id,
+                    track: newProps.playbackState.item,
+                    mode: this.state.hideArtist ? PlayerMode.Track : this.state.mode,
+                },
+                () => {
+                    newProps.active && this.waitForNext(restMs + 2000)
+                }
+            )
         }
     }
 
@@ -175,25 +190,29 @@ export class PagePlayer extends React.Component<Props, State> {
     renderContextRow(artistName: string, albumName: string, uri: string) {
         return (
             <div className={styles('context')}>
-                <span
-                    onMouseEnter={() => this.setVisualState('ARTIST')}
-                    onMouseLeave={() => this.exitVisualState()}
+                <div
+                    onMouseEnter={() => this.setVisualState(PlayerVisualStateId.Artist)}
+                    onMouseLeave={this.exitVisualState.bind(this)}
                     className={styles('context-artist')}
+                    onClick={() => {
+                        this.props.onPlayerAction(PlayerAction.Play, this.state.artistTopTracks.map(one => one.uri))
+                    }}
                 >
                     {artistName}
-                </span>
-                &nbsp;-&nbsp;
+                </div>
+                <div>&nbsp;-&nbsp;</div>
                 <div
                     className={styles('context-album')}
-                    onMouseEnter={() => this.setVisualState('ALBUM')}
-                    onMouseLeave={() => this.exitVisualState()}
+                    title={albumName}
+                    onMouseEnter={() => this.setVisualState(PlayerVisualStateId.Album)}
+                    onMouseLeave={this.exitVisualState.bind(this)}
                     onClick={() => {
                         this.props.onPlayerAction(PlayerAction.PlayContextURI, uri)
                     }}
                 >
-                    <div>{albumName}</div>
-                    <SvgButton className={styles('context-album-play')} img={'play'} width={15} />
+                    {albumName}
                 </div>
+                <SvgButton className={styles('context-album-play')} img={'play'} width={15} />
             </div>
         )
     }
@@ -206,7 +225,7 @@ export class PagePlayer extends React.Component<Props, State> {
         return vstate.render()
     }
 
-    async setVisualState(newState: string) {
+    async setVisualState(newState: PlayerVisualStateId) {
         const vstate = this.getCurrentVisualState()
         if (newState === this.state.vstate) {
             if (vstate) {
@@ -228,7 +247,7 @@ export class PagePlayer extends React.Component<Props, State> {
         return this.vstates.find(one => one.stateId === this.state.vstate)
     }
 
-    async exitVisualState(nextState?: string) {
+    async exitVisualState(nextState?: PlayerVisualStateId) {
         const lastStateId = '' + this.state.vstate
         const lastState = this.getCurrentVisualState()
         if (lastState) {
@@ -236,7 +255,7 @@ export class PagePlayer extends React.Component<Props, State> {
         }
         await waitForTime(500)
         if (lastStateId === this.state.vstate && lastState && !lastState.mouseHover) {
-            this.setVisualState(nextState || 'DEFAULT')
+            this.setVisualState(nextState || PlayerVisualStateId.Default)
         }
     }
 }

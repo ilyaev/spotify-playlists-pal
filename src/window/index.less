@@ -1,11 +1,23 @@
 @progress-bg-color: gray;
 @progress-bar-color: black;
+@player-width: 300px;
+
+.link {
+    cursor: pointer;
+    text-decoration: underline;
+    color: blue;
+}
+
+.truncate {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
 
 .spotify {
     background-color: rgba(0, 0, 0, 0.04);
     width: 100%;
     height: 100%;
-    // padding: 20px;
     font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
     font-size: 13px;
 
@@ -14,10 +26,7 @@
     }
 
     &_link {
-        cursor: pointer;
-        text-decoration: underline;
-        color: blue;
-        margin-bottom: 5px;
+        .link();
     }
 }
 
@@ -27,9 +36,8 @@
     background-color: #dbdbdb;
 
     &_context_image {
-        min-width: 300px;
-        min-height: 300px;
-        // border: 1px solid gray;
+        min-width: @player-width;
+        min-height: @player-width;
         margin-right: 20px;
         margin-bottom: 5px;
         display: flex;
@@ -42,36 +50,25 @@
     }
 
     &_track {
-        width: 300px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
+        width: @player-width;
+        .truncate();
         margin-bottom: 5px;
         text-align: center;
         font-size: larger;
     }
 
     &_context {
-        width: 300px;
-        text-overflow: ellipsis;
-        overflow: hidden;
+        width: @player-width;
+        .truncate();
         display: flex;
-        white-space: nowrap;
-        // margin-top: 5px;
-    }
-
-    &_context-artist {
-        cursor: pointer;
-        color: blue;
-        text-decoration: underline;
+        align-items: flex-end;
     }
 
     &_track_controls {
         margin-bottom: 10px;
         margin-top: -10px;
         display: flex;
-        width: 300px;
-        // border: 1px solid black;
+        width: @player-width;
         flex: 1;
         flex-direction: row;
         align-self: center;
@@ -81,7 +78,6 @@
 
     &_button {
         margin: 0px 10px 0px 10px;
-        // flex: 1;
         cursor: pointer;
         &_flip {
             -webkit-transform: rotate(180deg);
@@ -110,35 +106,35 @@
         }
     }
 
-    &_artist {
+    &_overlay {
         position: absolute;
         top: 92px;
         z-index: 10;
-        width: 298px;
-        height: 300px;
-        // margin-top: -15px;
+        width: calc(@player-width - 2px);
+        height: @player-width;
         border: 1px solid black;
         background-color: rgba(255, 255, 255, 0.9);
     }
 
     &_context-album {
-        color: blue;
-        display: flex;
-        text-decoration: underline;
-        cursor: pointer;
+        .link();
+        .truncate();
     }
 
-    &_context-album &_context-album-play {
+    &_context-artist {
+        .link();
+    }
+
+    &_context &_context-album-play {
         visibility: hidden;
     }
 
-    &_context-album:hover &_context-album-play {
+    &_context:hover &_context-album-play {
         visibility: visible;
     }
 
     &_context-album-play {
-        margin: 1px 0px 0px 5px !important;
-        // padding-top: -15px !important;
+        margin: 1px 0px 0px 2px !important;
     }
 }
 
@@ -191,9 +187,7 @@
         font-size: large;
         flex: 1;
         margin-bottom: 10px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
+        .truncate();
     }
 
     &_bottom-column {
@@ -203,16 +197,12 @@
     }
 
     &_genre {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
+        .truncate();
         width: 100px;
     }
 
     &_genre:hover {
-        text-decoration: underline;
-        color: blue;
-        cursor: pointer;
+        .link();
     }
 
     &_name {
@@ -265,9 +255,7 @@
     }
 
     &_track-name {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
+        .truncate();
     }
 
     &_track &_track-name {
@@ -276,9 +264,7 @@
     }
 
     &_track:hover &_track-name {
-        color: blue;
-        cursor: pointer;
-        text-decoration: underline;
+        .link();
     }
     &_top {
         margin-left: 5px;

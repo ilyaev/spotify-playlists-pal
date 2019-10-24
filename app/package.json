@@ -2,6 +2,7 @@
   "name": "pbartz.electron.spotify.companion",
   "version": "1.0.0",
   "description": "Spotify Companion",
+  "productName": "Spotify Companion",
   "main": "main.js",
   "author": "Yura Ilyaev<ilyaev@gmail.com>",
   "license": "ISC",

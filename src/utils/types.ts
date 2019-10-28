@@ -1,143 +1,90 @@
 import { BrowserWindowConstructorOptions, BrowserWindow, LoadFileOptions } from 'electron'
+import {
+    CurrentUsersProfileResponse,
+    PlaylistObjectFull,
+    AlbumObjectFull,
+    TrackObjectFull,
+    AudioFeaturesObject,
+    ArtistObjectFull,
+    CurrentPlaybackResponse,
+    ImageObject,
+    AudioAnalysisResponse,
+} from './spotify-types'
+import SpotifyWebApi from 'spotify-web-api-node'
 
-export interface SpotifyTrackFeatures {
-    acousticness: number
-    analysis_url: string
-    danceability: number
-    duration_ms: number
-    energy: number
-    id: string
-    instrumentalness: number
-    key: number
-    liveness: number
-    loudness: number
-    mode: number
-    speechiness: number
-    tempo: number
-    time_signature: number
-    track_href: string
-    type: string
-    uri: string
-    valence: number
+export interface SpotifyTrackFeatures extends AudioFeaturesObject {}
+
+export interface SpotifyImage extends ImageObject {}
+
+export interface SpotifyArtist extends ArtistObjectFull {}
+
+export interface SpotifyAlbum extends AlbumObjectFull {}
+
+export interface SpotifyTrack extends TrackObjectFull {}
+
+export interface SpotifyMe extends CurrentUsersProfileResponse {}
+
+export interface SpotifyPlaylist extends PlaylistObjectFull {
+    total_tracks?: number
 }
 
-export interface SpotifyImage {
-    url: string
-    height: number
-    width: number
-}
-
-export interface Settings {
-    max_size: string
-    order_recent_playlist: string
-    order_playlists: string
-    lunch_at_login: boolean
-    playlist: string
-}
-
-export interface SpotifyArtist {
-    name: string
-    uri: string
-    id: string
-    type: string
-    genres: string[]
-    images: SpotifyImage[]
-    popularity: number
-    followers: { url: string; total: number }
-    external_urls: any[]
-}
-
-export interface SpotifyAlbum {
-    uri: string
-    release_date: string
-    release_date_precision: string
-    type: string
-    name: string
-    label: string
-    popularity: number
-    images: SpotifyImage[]
-    album_type: string
-    id: string
-    total_tracks: number
-    artists: SpotifyArtist[]
-    genres: string[]
-    tracks: {
-        items: SpotifyTrack[]
-        total: number
-    }
-}
-
-export interface SpotifyTrack {
-    type: string
-    uri: string
-    name: string
-    id: string
-    preview_url: string
-    artists: SpotifyArtist[]
-    album: SpotifyAlbum
-    duration_ms: number
-    explicit: boolean
-    is_local: boolean
-    is_playable: boolean
-    popularity: number
-    track_number: number
-}
-
-export interface SpotifyRecentItem {
-    played_at: string
-    track: SpotifyTrack
-    context: {
-        type: string
-        uri: string
-    }
-}
-
-export interface SpotifyMe {
-    display_name: string
-    email: string
-    external_urls: {
-        spotify: string
-    }
-    id: string
-    images: SpotifyImage[]
-    product: string
-    type: string
-    uri: string
-}
-
-export interface SpotifyPlaylist {
-    id: string
-    name: string
-    uri: string
-    images: SpotifyImage[]
-    tracks: { total: number; href: string }
-    total_tracks: number
-    owner: {
-        id: string
-        uri: string
-        display_name: string
-    }
-}
-
-export interface SpotifyPlaybackState {
-    context: {
-        type: string
-        uri: string
-    }
+export interface SpotifyPlaybackState extends CurrentPlaybackResponse {
     originContextUri: string
-    is_playing: boolean
-    shuffle_state: boolean
-    repeat_state: 'off' | 'context'
-    item: SpotifyTrack
-    device: {
-        id: string
-        is_active: boolean
-        name: string
-        type: string
-        volume_percent: number
-    }
-    progress_ms: number
-    currently_playing_type: string
+}
+
+interface SpotifyAudioInterval {
+    start: number
+    duration: number
+    confidence: number
+}
+
+interface SpotifyAudioSection extends SpotifyAudioInterval {
+    loudness: number
+    tempo: number
+    tempo_confidence: number
+    key: number
+    key_confidence: number
+    mode: number
+    mode_confidence: number
+    time_signature: number
+    time_signature_confidence: number
+}
+
+interface SpotifyAudioSegment extends SpotifyAudioInterval {
+    loudness_start: number
+    loudness_max_time: number
+    loudness_max: number
+    loudness_end: number
+    pitches: number[]
+    timbre: number[]
+}
+
+export interface SpotifyAudioTrack extends SpotifyAudioSection {
+    duration: number
+    sample_md5: string
+    offset_seconds: number
+    window_seconds: number
+    analysis_sample_rate: number
+    analysis_channels: number
+    end_of_fade_in: number
+    start_of_fade_out: number
+    codestring: string
+    code_version: number
+    echoprintstring: string
+    echoprint_version: number
+    synchstring: string
+    synch_version: number
+    rhythmstring: string
+    rhythm_version: number
+}
+
+export interface SpotifyAudioAnalysis {
+    bars: SpotifyAudioInterval[]
+    beats: SpotifyAudioInterval[]
+    sections: SpotifyAudioSection[]
+    segments: SpotifyAudioSegment[]
+    tatum: SpotifyAudioInterval
+    track: SpotifyAudioTrack
 }
 
 export interface SpotifyFavoriteList {
@@ -148,8 +95,27 @@ export interface SpotifyFavoriteList {
 
 export interface SpotifyAuth {
     success: boolean
+    timestamp: number
+    expires_in: number
     access_token: string
     scope: string
+}
+
+export interface Settings {
+    max_size: string
+    order_recent_playlist: string
+    order_playlists: string
+    lunch_at_login: boolean
+    playlist: string
+}
+
+export interface SpotifyRecentItem {
+    played_at: string
+    track: SpotifyTrack
+    context: {
+        type: string
+        uri: string
+    }
 }
 
 export enum SpotifyEvents {
@@ -175,12 +141,14 @@ export enum SpotifyEvents {
     TrackInfo = 'SPOTIFY-TRACK-INFO',
     PlayContextURI = 'SPOTIFY-PLAY-CONTEXT-URI',
     PlayGenre = 'SPOTIFY-PLAY-GENRE',
+    TrackAnalysis = 'SPOTIFY-TRACK-ANALYSIS',
 }
 
 export enum BrowserState {
     Settings = 'settings',
     Player = 'player',
     Index = 'index',
+    Visualizer = 'visualizer',
 }
 
 export enum PlayerAction {
@@ -228,3 +196,9 @@ export interface PlayerVisualState {
     onExit: () => void
     mouseHover: boolean
 }
+
+export interface ExtendedSpotifyApi extends SpotifyWebApi {
+    get: <T>(url: string, params?: any) => Promise<T>
+}
+
+export * from './spotify-types'

@@ -4,7 +4,6 @@
   "description": "Spotify Companion",
   "main": "app/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "touch ./app/chump.map && rm ./app/*.map && webpack --config ./webpack.config.js --env prod",
     "dev": "webpack --config ./webpack.config.js --watch --env dev",
     "start": "electron ./app/main.js",
@@ -36,15 +35,22 @@
     "@types/react-dom": "^16.9.1",
     "@types/react-inlinesvg": "^0.8.1",
     "@types/spotify-web-api-node": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.5.0",
+    "@typescript-eslint/parser": "^2.5.0",
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^5.0.4",
     "css-loader": "^3.2.0",
     "devtron": "^1.4.0",
     "electron": "^6.0.10",
     "electron-builder": "^21.2.0",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-react": "^7.16.0",
     "html-webpack-plugin": "^3.2.0",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
+    "prettier": "^1.18.2",
     "react": "^16.10.1",
     "react-desktop": "^0.3.9",
     "react-dom": "^16.10.1",
@@ -62,8 +68,13 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "@types/d3-array": "^2.0.0",
+    "@types/d3-scale": "^2.1.1",
     "@types/node-fetch": "^2.5.2",
     "@types/react-tooltip": "^3.9.3",
+    "@types/three": "^0.103.2",
+    "d3-array": "^2.3.3",
+    "d3-scale": "^3.2.0",
     "electron-log": "^3.0.8",
     "electron-reload": "^1.5.0",
     "elemon": "^5.0.3",
@@ -72,6 +83,7 @@
     "node-fetch": "^2.6.0",
     "react-contextmenu": "^2.11.0",
     "react-tooltip": "^3.11.1",
-    "spotify-node-applescript": "^1.1.1"
+    "spotify-node-applescript": "^1.1.1",
+    "three": "^0.109.0"
   }
 }

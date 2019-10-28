@@ -1,4 +1,4 @@
-import { app, ipcMain, LoadFileOptions, Rectangle, Event } from 'electron'
+import { app, ipcMain, Rectangle, Event } from 'electron'
 import {
     APP_WINDOW_HEIGHT,
     APP_WINDOW_WIDTH,
@@ -25,12 +25,11 @@ import {
     AppBrowserOptions,
     SpotifyArtist,
     SpotifyTrack,
-    SpotifyTrackFeatures,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
-import { spotifyApi, spotifyMac } from '../utils/api'
-import { normalizeSpotifyURI, waitForTime } from '../utils'
+import { spotifyApi, spotifyMac, filesApi } from 'utils/api'
+import { normalizeSpotifyURI, waitForTime, mkTime } from 'src/utils'
 import { AppBrowserWindow } from './browser/index'
 import fetch from 'node-fetch'
 import { isDev } from '../main'
@@ -46,9 +45,9 @@ interface AppOptions {
 
 export class AppWindow {
     browser: AppBrowserWindow
-    basename: string
+    basename: string = app.getAppPath() + '/'
     tray: AppTray
-    playlists: SpotifyPlaylists
+    playlists: SpotifyPlaylists = new SpotifyPlaylists()
     auth: SpotifyAuth
     me: SpotifyMe = {} as SpotifyMe
     playbackState: SpotifyPlaybackState
@@ -57,13 +56,10 @@ export class AppWindow {
 
     constructor(options: AppOptions) {
         this.options = options
-        this.basename = app.getAppPath() + '/'
 
         this.browser = new AppBrowserWindow({
             onWillRedirect: this.onWillRedirect.bind(this),
         })
-
-        this.playlists = new SpotifyPlaylists()
 
         this.listenToEvents()
         this.listenToRedirects()
@@ -75,10 +71,14 @@ export class AppWindow {
     }
 
     async initialize() {
-        await this.loadMe()
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        isDev && this.showMiniPlayer()
+        // isDev && this.browser.setState(BrowserState.Visualizer)
+        // isDev && this.showMiniPlayer()
+    }
+
+    onVisualize() {
+        this.browser.setState(BrowserState.Visualizer)
     }
 
     listenToEvents() {
@@ -180,18 +180,8 @@ export class AppWindow {
         })
 
         ipcMain.on(SpotifyEvents.TrackInfo, async (_event, id) => {
-            const cacheID = SpotifyEvents.TrackInfo + '_' + id
-            const [features] =
-                typeof CACHE[cacheID] === 'undefined'
-                    ? await Promise.all([
-                          spotifyApi.getAudioFeaturesForTrack(id).then(res => res.body) as Promise<SpotifyTrackFeatures>,
-                          //   spotifyApi.getAudioAnalysisForTrack(id).then(res => res.body) as Promise<SpotifyTrack>,
-                      ])
-                    : CACHE[cacheID]
-
-            CACHE[cacheID] = [features]
-
-            this.browser.send(SpotifyEvents.TrackInfo, features)
+            const track = await filesApi.loadTrackAnalysis('1WODCUH1tXKT8T3CjhzwCQ')
+            console.log(track.track)
         })
 
         ipcMain.on(SpotifyEvents.PlayContextURI, (_event, uri) => {
@@ -208,6 +198,17 @@ export class AppWindow {
             console.log(list.length, list.map(one => `${one.name} - ${one.artists[0].name}`))
         })
 
+        ipcMain.on(SpotifyEvents.TrackAnalysis, async _event => {
+            const state = this.playbackState
+            const data = await filesApi.loadTrackAnalysis(state.item.id) //('1WODCUH1tXKT8T3CjhzwCQ')
+            await this.syncPlaybackState()
+            this.browser.send(SpotifyEvents.TrackAnalysis, state, data)
+        })
+
+        ipcMain.on('FULLSCREEN', (_event, flag: boolean) => {
+            this.browser.fullscreen(flag)
+        })
+
         ipcMain.on('DEBUG', (event, data) => {
             console.log('DEBUG: ', data)
         })
@@ -220,9 +221,14 @@ export class AppWindow {
     async authSpotify() {
         this.goSettings({ hash: BrowserState.Settings, hidden: true })
         const authRaw = await this.loadItem('SPOTIFY_AUTH')
-        this.auth = JSON.parse(authRaw || JSON.stringify({ access_token: '' }))
+        this.auth = JSON.parse(authRaw || JSON.stringify({ access_token: '', timestamp: 0, expires_in: 0 }))
         if (this.auth.access_token) {
-            await this.refreshToken()
+            if (this.auth.timestamp && this.auth.timestamp + this.auth.expires_in - 60 * 10 > mkTime()) {
+                spotifyApi.setAccessToken(this.auth.access_token)
+                this.initialize()
+            } else {
+                await this.refreshToken()
+            }
         } else {
             this.goAuthSpotify()
         }
@@ -277,7 +283,7 @@ export class AppWindow {
     setupTokenAutoRefresh() {
         this.refreshId = setTimeout(async () => {
             if (this.auth.access_token) {
-                await this.refreshToken()
+                await this.refreshToken(false)
             }
             this.setupTokenAutoRefresh()
         }, SPOTIFY_TOKEN_REFRESH_INTERVAL)
@@ -340,10 +346,6 @@ export class AppWindow {
                 .then(res => res.body.items || [])
                 .catch(_e => []) as Promise<SpotifyRecentItem[]>,
             this.playlists.loadAllSavedAlbums(),
-            // spotifyApi
-            //     .getMySavedAlbums({ limit: 50 })
-            //     .then(res => res.body.items.map(one => one.album))
-            //     .catch(_e => []) as Promise<SpotifyAlbum[]>,
         ])
 
         const db = (await this.loadItem('SPOTIFY_FAVORITES')) || '[]'
@@ -378,6 +380,7 @@ export class AppWindow {
             onRightClick: this.showMiniPlayer.bind(this),
             onLeftClick: () => this.browser.hide(),
             onQuit: () => this.browser.closeAll(),
+            onVisualize: this.onVisualize.bind(this),
         })
 
         this.tray.refresh()
@@ -385,7 +388,9 @@ export class AppWindow {
     }
 
     async syncPlaybackState() {
-        this.playbackState = (await spotifyApi.getMyCurrentPlaybackState().then(res => res.body)) as SpotifyPlaybackState
+        this.playbackState = (await spotifyApi
+            .getMyCurrentPlaybackState()
+            .then(res => res.body)) as SpotifyPlaybackState
 
         if (this.playbackState.context && this.playbackState.context.uri) {
             this.playbackState.originContextUri = '' + this.playbackState.context.uri
@@ -395,7 +400,10 @@ export class AppWindow {
             this.saveFavorites(
                 this.playlists.addFavorite(
                     this.playbackState.context.uri,
-                    this.tray.playbackState.context && this.tray.playbackState.context.uri === this.playbackState.context.uri ? 0 : 1
+                    this.tray.playbackState.context &&
+                        this.tray.playbackState.context.uri === this.playbackState.context.uri
+                        ? 0
+                        : 1
                 )
             )
         }
@@ -421,6 +429,7 @@ export class AppWindow {
     syncAuth(body: any) {
         spotifyApi.setAccessToken(body.access_token)
         this.auth.access_token = body.access_token
+        body.timestamp = mkTime()
         this.storeItem('SPOTIFY_AUTH', JSON.stringify(body))
     }
 
@@ -441,7 +450,7 @@ export class AppWindow {
     }
 
     storeItem(item: string, value: string) {
-        this.browser.storeItem(item, value)
+        this.browser.storeItem(item, value + '')
     }
 
     loadItem(item: string) {
@@ -453,6 +462,9 @@ export class AppWindow {
     }
 
     showMiniPlayer(trayBounds?: Rectangle) {
-        this.browser.setState(BrowserState.Player, trayBounds ? { position: { x: trayBounds.x, y: trayBounds.y + 20 } } : {})
+        this.browser.setState(
+            BrowserState.Player,
+            trayBounds ? { position: { x: trayBounds.x, y: trayBounds.y + 20 } } : {}
+        )
     }
 }

@@ -22,3 +22,18 @@ export const msToString = (ms: number) => {
     const secs = Math.round((ms - mins * 60000) / 1000)
     return `${mins < 10 ? '0' + mins : mins}:${secs < 10 ? '0' + secs : secs}`
 }
+
+export const mkTime = () => Math.round(new Date().getTime() / 1000)
+
+export const interpolate = (a, b) => {
+    return function(t) {
+        return a * (1 - t) + b * t
+    }
+}
+
+export const getRandomColor = (max: number = 1) => {
+    const r = Math.random() * max
+    const g = Math.random() * max
+    const b = Math.random() * max
+    return [r, g, b]
+}

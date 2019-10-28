@@ -3,6 +3,11 @@ const nodeExternals = require('webpack-node-externals')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const path = require('path')
 
+const alias = {
+    src: path.resolve(__dirname, 'src/'),
+    utils: path.resolve(__dirname, 'src/utils/'),
+}
+
 module.exports = (env, args) => [
     {
         mode: env === 'prod' ? 'production' : 'development',
@@ -11,10 +16,7 @@ module.exports = (env, args) => [
         devtool: env === 'prod' ? undefined : 'source-map',
         resolve: {
             extensions: ['.ts', '.tsx', '.js'],
-            alias: {
-                src: path.resolve(__dirname, 'src/'),
-                utils: path.resolve(__dirname, 'src/utils/'),
-            },
+            alias,
         },
         module: {
             rules: [
@@ -46,6 +48,7 @@ module.exports = (env, args) => [
         devtool: env === 'prod' ? undefined : 'source-map',
         resolve: {
             extensions: ['.ts', '.js'],
+            alias,
         },
         externals: [nodeExternals()],
         devServer: {

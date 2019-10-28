@@ -1,10 +1,11 @@
 import { BrowserWindow, LoadFileOptions, app, Event, screen as EScreen } from 'electron'
-import { BrowserState, AppBrowserOptions } from '../../utils/types'
+import { BrowserState, AppBrowserOptions } from 'utils/types'
 import { AppBrowserStateSettings } from './settings'
 import { AppBrowserStatePlayer } from './player'
-import { AppBrowserState } from '../../utils/types'
-import { isDev } from '../../main'
-import { AppTray } from '../tray'
+import { AppBrowserState } from 'utils/types'
+import { isDev } from 'src/main'
+import { AppTray } from 'src/main/tray'
+import { AppBrowserStateVisualizer } from './visualizer'
 
 interface Options {
     onWillRedirect: (event: Event, newUrl: string) => void
@@ -40,6 +41,7 @@ export class AppBrowserWindow {
             })
             state.win.webContents.on('will-redirect', this.options.onWillRedirect)
         })
+        this.states.push(new AppBrowserStateVisualizer(this))
     }
 
     show() {
@@ -55,6 +57,10 @@ export class AppBrowserWindow {
 
     getWin() {
         return this.state.win
+    }
+
+    fullscreen(flag: boolean = true) {
+        this.state.win && this.state.win.isVisible() && this.state.win.setFullScreen(flag)
     }
 
     setState(newState: BrowserState, options?: AppBrowserOptions) {
@@ -83,10 +89,8 @@ export class AppBrowserWindow {
     }
 
     loadFile(path: string, options?: LoadFileOptions) {
-        console.log('Load File: ', this.state.stateId, path, options)
         if (this.state.win) {
             if (options && options.hash && this.state.win.webContents.getURL().indexOf(`#${options.hash}`) !== -1) {
-                console.log('Skipped')
             } else {
                 this.state.win.loadFile(path, options)
             }
@@ -94,14 +98,12 @@ export class AppBrowserWindow {
     }
 
     loadURL(url: string) {
-        console.log('Load URL: ', url)
         this.state.win && this.state.win.loadURL(url)
     }
 
     send(channel: string, ...args: any[]) {
         console.log('SEND: ', channel, JSON.stringify(args).length + ' bytes')
         this.states.forEach(state => state.win && state.win.webContents.send(channel, ...args))
-        // this.state.win && this.state.win.webContents.send(channel, ...args)
     }
 
     getExternalDisplay() {

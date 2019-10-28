@@ -1,7 +1,14 @@
 import { app, Tray, Menu, MenuItemConstructorOptions, Rectangle } from 'electron'
 import { TRAY_ICON_FILE } from '../utils/const'
 import { SpotifyPlaylists } from './playlists'
-import { SpotifyPlaylist, SpotifyPlaybackState, Settings, SpotifyMe, BrowserState, AppBrowserOptions } from '../utils/types'
+import {
+    SpotifyPlaylist,
+    SpotifyPlaybackState,
+    Settings,
+    SpotifyMe,
+    BrowserState,
+    AppBrowserOptions,
+} from '../utils/types'
 
 interface TrayOptions {
     onPlaylistClick: (list: SpotifyPlaylist) => void
@@ -14,6 +21,7 @@ interface TrayOptions {
     onRightClick: (bounds: Rectangle) => void
     onLeftClick: () => void
     onQuit: () => void
+    onVisualize: () => void
 }
 
 const orderItemsBy = (order: string) => (a, b) => (order === 'name' ? (a.name > b.name ? 1 : -1) : 0)
@@ -97,13 +105,18 @@ export class AppTray {
                 },
                 { type: 'separator' },
             ] as MenuItemConstructorOptions[]).concat(
-                this.buildMenuItems(this.lists.getFavPlaylists(parseInt(this.settings.max_size), this.settings.order_recent_playlist))
+                this.buildMenuItems(
+                    this.lists.getFavPlaylists(parseInt(this.settings.max_size), this.settings.order_recent_playlist)
+                )
                     .concat([{ type: 'separator' }])
                     .concat([
                         {
                             label: 'All Playlists',
                             submenu: Menu.buildFromTemplate(
-                                this.buildMenuItems([...this.lists.all].sort(orderItemsBy(this.settings.order_playlists)), 'normal')
+                                this.buildMenuItems(
+                                    [...this.lists.all].sort(orderItemsBy(this.settings.order_playlists)),
+                                    'normal'
+                                )
                             ),
                         },
                     ] as MenuItemConstructorOptions[])
@@ -121,7 +134,9 @@ export class AppTray {
                     .concat([
                         {
                             label: 'Recent Albums',
-                            submenu: Menu.buildFromTemplate(this.buildMenuItems(this.lists.recentAlbums as any[], 'normal')),
+                            submenu: Menu.buildFromTemplate(
+                                this.buildMenuItems(this.lists.recentAlbums as any[], 'normal')
+                            ),
                         },
                         {
                             type: 'separator',
@@ -133,10 +148,16 @@ export class AppTray {
                         {
                             label:
                                 this.playbackState && this.playbackState.item && this.settings.playlist
-                                    ? `Add '${this.playbackState.item.name}' To '${this.lists.getDisplayNameById(this.settings.playlist)}'`
+                                    ? `Add '${this.playbackState.item.name}' To '${this.lists.getDisplayNameById(
+                                          this.settings.playlist
+                                      )}'`
                                     : 'Add To Playlist',
-                            enabled: this.playbackState && this.playbackState.item && this.settings.playlist ? true : false,
-                            click: () => this.options.onAddToPlaylist(this.playbackState.item ? this.playbackState.item.uri : ''),
+                            enabled:
+                                this.playbackState && this.playbackState.item && this.settings.playlist ? true : false,
+                            click: () =>
+                                this.options.onAddToPlaylist(
+                                    this.playbackState.item ? this.playbackState.item.uri : ''
+                                ),
                         },
                         {
                             type: 'separator',
@@ -149,13 +170,21 @@ export class AppTray {
                             },
                             checked: this.playbackState.shuffle_state ? true : false,
                         },
+                        {
+                            label: 'Visualize',
+                            type: 'normal',
+                            click: event => {
+                                this.options.onVisualize()
+                            },
+                        },
                     ])
                     .concat([
                         { type: 'separator' },
                         {
                             label: 'Settings',
                             click: () => {
-                                this.options.onSettings && this.options.onSettings({ hash: BrowserState.Settings, hidden: false })
+                                this.options.onSettings &&
+                                    this.options.onSettings({ hash: BrowserState.Settings, hidden: false })
                             },
                         },
                         { type: 'separator' },
@@ -180,7 +209,9 @@ export class AppTray {
             )
         )
         // this.tray.setContextMenu(this.contextMenu)
-        this.tray.setToolTip(this.playbackState.context ? this.lists.getDisplayName(this.playbackState.context.uri) : 'Nothing is played')
+        this.tray.setToolTip(
+            this.playbackState.context ? this.lists.getDisplayName(this.playbackState.context.uri) : 'Nothing is played'
+        )
     }
 
     buildMenuItems(list: SpotifyPlaylist[], type: 'radio' | 'normal' = 'radio'): MenuItemConstructorOptions[] {
@@ -189,7 +220,10 @@ export class AppTray {
                 label: one.name,
                 type: type === 'radio' && this.playbackState.context ? 'radio' : 'normal',
                 id: one.uri,
-                checked: type === 'radio' && this.playbackState.context && one.uri === this.playbackState.context.uri ? true : undefined,
+                checked:
+                    type === 'radio' && this.playbackState.context && one.uri === this.playbackState.context.uri
+                        ? true
+                        : undefined,
                 click: _event => {
                     this.tray.setToolTip(`${one.name} - ${one.total_tracks || one.tracks.total} tracks`)
                     this.options.onPlaylistClick && this.options.onPlaylistClick(one)

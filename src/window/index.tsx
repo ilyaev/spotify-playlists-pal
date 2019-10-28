@@ -1,13 +1,24 @@
 import * as React from 'react'
 import { bem, waitForTime } from 'src/utils'
-import { SpotifyPlaylist, SpotifyEvents, SpotifyMe, SpotifyPlaybackState, BrowserState, PlayerAction } from 'utils/types'
+import {
+    SpotifyPlaylist,
+    SpotifyEvents,
+    SpotifyMe,
+    SpotifyPlaybackState,
+    BrowserState,
+    PlayerAction,
+} from 'utils/types'
 import { ipcRenderer } from 'electron'
 import { ProgressCircle, View } from 'react-desktop/macOs'
 import { PageSettings } from './settings'
 import { PagePlayer } from './player'
+import { ThreeVisualizer } from './visualizer'
 
 const styles = bem('spotify')
 import './index.less'
+import { SphereScene } from './visualizer/scene/sphere'
+import { RocksScene } from './visualizer/scene/rocks'
+import { StarsScene } from './visualizer/scene/stars'
 
 interface Props {}
 
@@ -17,6 +28,7 @@ interface State {
     playbackState: SpotifyPlaybackState
     mode: string
     playerActive: boolean
+    vizActive: boolean
 }
 
 export class AppSpotify extends React.Component<Props, State> {
@@ -26,6 +38,7 @@ export class AppSpotify extends React.Component<Props, State> {
         playbackState: {} as SpotifyPlaybackState,
         me: {} as SpotifyMe,
         playerActive: true,
+        vizActive: false,
     }
 
     componentDidMount() {
@@ -50,14 +63,24 @@ export class AppSpotify extends React.Component<Props, State> {
         })
 
         ipcRenderer.on('WINDOW_SHOW', (_event, stateID) => {
+            debugger
+            console.log('WIN SHOW!!!')
             if (stateID === BrowserState.Player) {
                 this.setState({ playerActive: true })
+            }
+            if (stateID === BrowserState.Visualizer) {
+                console.log('---ACTIVATE VIZ')
+                this.setState({ vizActive: true })
             }
         })
 
         ipcRenderer.on('WINDOW_HIDE', (_event, stateID) => {
             if (stateID === BrowserState.Player) {
                 this.setState({ playerActive: false })
+            }
+            if (stateID === BrowserState.Visualizer) {
+                console.log('DEACTIVATE VIZ')
+                this.setState({ vizActive: false })
             }
         })
 
@@ -159,8 +182,13 @@ export class AppSpotify extends React.Component<Props, State> {
                 {this.state.mode === 'SERVER_ERROR' && this.renderServerError()}
                 {this.state.mode === BrowserState.Player && this.renderPlayer()}
                 {this.state.mode === 'loading' && this.renderLoading()}
+                {this.state.mode === BrowserState.Visualizer && this.renderVisualizer()}
             </div>
         )
+    }
+
+    renderVisualizer() {
+        return <ThreeVisualizer vscene={new StarsScene()} active={this.state.vizActive} />
     }
 
     sandbox() {

@@ -66,15 +66,19 @@ export class PagePlayer extends React.Component<Props, State> {
         vstate: PlayerVisualStateId.Default,
     }
 
-    constructor(...args: any) {
-        super(args)
+    constructor(props: Props) {
+        super(props)
         const vstateOptions = {
             getState: () => this.state,
             getOnAction: () => this.props.onPlayerAction,
             exitState: this.exitVisualState.bind(this),
         }
 
-        this.vstates = [new ArtistOverlayState(vstateOptions), new AlbumOverlayState(vstateOptions), new TrackOverlayState(vstateOptions)]
+        this.vstates = [
+            new ArtistOverlayState(vstateOptions),
+            new AlbumOverlayState(vstateOptions),
+            new TrackOverlayState(vstateOptions),
+        ]
     }
 
     componentDidMount() {
@@ -97,7 +101,9 @@ export class PagePlayer extends React.Component<Props, State> {
             clearInterval(this.waitId)
         }
 
-        const restMs = newProps.playbackState.item ? newProps.playbackState.item.duration_ms - newProps.playbackState.progress_ms : 0
+        const restMs = newProps.playbackState.item
+            ? newProps.playbackState.item.duration_ms - newProps.playbackState.progress_ms
+            : 0
 
         if (restMs > 0 && newProps.playbackState && newProps.playbackState.progress_ms > 0) {
             this.setState(
@@ -157,7 +163,9 @@ export class PagePlayer extends React.Component<Props, State> {
                         <SvgButton img={'next'} flip onClick={() => this.props.onPlayerAction(PlayerAction.Prev)} />
                         <SvgButton
                             img={isPlaying ? 'pause' : 'play'}
-                            onClick={() => this.props.onPlayerAction(isPlaying ? PlayerAction.Pause : PlayerAction.Play)}
+                            onClick={() =>
+                                this.props.onPlayerAction(isPlaying ? PlayerAction.Pause : PlayerAction.Play)
+                            }
                         />
                         <SvgButton img={'next'} onClick={() => this.props.onPlayerAction(PlayerAction.Next)} />
                         <SvgButton
@@ -167,7 +175,13 @@ export class PagePlayer extends React.Component<Props, State> {
                             onClick={() => this.props.onPlayerAction(PlayerAction.ToggleRepeat)}
                         />
                     </div>
-                    <div className={styles('track')}>{track}</div>
+                    <div
+                        className={styles('track')}
+                        onMouseEnter={() => this.setVisualState(PlayerVisualStateId.Track)}
+                        onMouseLeave={this.exitVisualState.bind(this)}
+                    >
+                        {track}
+                    </div>
                     <div className={styles('context_image')}>
                         <img src={img} width={300} style={{ verticalAlign: 'text-top' }} />
                     </div>
@@ -178,7 +192,10 @@ export class PagePlayer extends React.Component<Props, State> {
                             startFrom={this.state.progress}
                             active={this.props.active && isPlaying}
                             onClick={perc => {
-                                this.props.onPlayerAction(PlayerAction.Rewind, Math.floor((perc / 100) * this.state.total))
+                                this.props.onPlayerAction(
+                                    PlayerAction.Rewind,
+                                    Math.floor((perc / 100) * this.state.total)
+                                )
                             }}
                         />
                     </div>

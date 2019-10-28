@@ -96,12 +96,14 @@ export class SpotifyPlaylists {
 
     async loadAllPlaylist(): Promise<SpotifyPlaylist[]> {
         try {
-            const meta = await spotifyApi.getUserPlaylists(undefined, { limit: 1, fields: 'total,limit' }).then(res => res.body)
+            const meta = await spotifyApi.getUserPlaylists(undefined, { limit: 1 }).then(res => res.body)
             const pages = Math.ceil(meta.total / 50)
             const all: number[] = new Array(pages).fill(1)
             return (await Promise.all(
                 all.map((_v, page) =>
-                    spotifyApi.getUserPlaylists(undefined, { limit: 50, offset: page * 50 }).then(r => r.body.items || [])
+                    spotifyApi
+                        .getUserPlaylists(undefined, { limit: 50, offset: page * 50 })
+                        .then(r => (r.body.items as SpotifyPlaylist[]) || [])
                 )
             )).reduce((r, n) => r.concat(n), [])
         } catch (e) {
@@ -112,13 +114,15 @@ export class SpotifyPlaylists {
 
     async loadAllSavedAlbums(): Promise<SpotifyAlbum[]> {
         try {
-            const meta = await spotifyApi.getMySavedAlbums({ limit: 1, fields: 'total,limit' }).then(res => res.body)
+            const meta = await spotifyApi.getMySavedAlbums({ limit: 1, fields: 'total,limit' } as any).then(res => res.body)
             const pages = Math.ceil(meta.total / 50)
             const all: number[] = new Array(pages).fill(1)
             return pages > 0
                 ? (await Promise.all(
                       all.map((_v, page) =>
-                          spotifyApi.getMySavedAlbums({ limit: 50, offset: page * 50 }).then(r => r.body.items.map(one => one.album))
+                          spotifyApi
+                              .getMySavedAlbums({ limit: 50, offset: page * 50 })
+                              .then(r => r.body.items.map(one => one.album as SpotifyAlbum))
                       )
                   )).reduce((r, n) => r.concat(n), [])
                 : []

@@ -1,6 +1,6 @@
 import { SPOTIFY_CLIENT_ID } from '../env'
 import { SPOTIFY_CALLBACK_URL } from './const'
-import spotifyMac from 'spotify-node-applescript'
+import * as spotifyMac from 'utils/spotify-node-applescript'
 import { builder as webApiBuilder } from 'spotify-web-api-node/src/webapi-request'
 import HttpManager from 'spotify-web-api-node/src/http-manager'
 import SpotifyWebApi from 'spotify-web-api-node'

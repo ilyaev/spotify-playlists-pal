@@ -177,8 +177,8 @@ export class PagePlayer extends React.Component<Props, State> {
                     </div>
                     <div
                         className={styles('track')}
-                        onMouseEnter={() => this.setVisualState(PlayerVisualStateId.Track)}
-                        onMouseLeave={this.exitVisualState.bind(this)}
+                        // onMouseEnter={() => this.setVisualState(PlayerVisualStateId.Track)}
+                        // onMouseLeave={this.exitVisualState.bind(this)}
                     >
                         {track}
                     </div>

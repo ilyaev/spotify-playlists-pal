@@ -181,8 +181,8 @@ export class AppWindow {
         })
 
         ipcMain.on(SpotifyEvents.TrackInfo, async (_event, id) => {
-            const track = await filesApi.loadTrackAnalysis('1WODCUH1tXKT8T3CjhzwCQ')
-            console.log(track.track)
+            // const track = await filesApi.loadTrackAnalysis('1WODCUH1tXKT8T3CjhzwCQ')
+            // console.log(track.track)
         })
 
         ipcMain.on(SpotifyEvents.PlayContextURI, (_event, uri) => {
@@ -221,6 +221,8 @@ export class AppWindow {
             spotifyMac.getState((error, state) => {
                 if (!error) {
                     this.browser.send(SpotifyEvents.StateOnMac, state)
+                } else {
+                    console.log('MAC:NO:', error, state)
                 }
             })
         })
@@ -229,8 +231,8 @@ export class AppWindow {
             this.browser.fullscreen(flag)
         })
 
-        ipcMain.on(AppAction.ExitBrowserState, () => {
-            this.browser.hide()
+        ipcMain.on(AppAction.ExitBrowserState, (_event, hideFullScreen: boolean = false) => {
+            this.browser.hide(hideFullScreen)
         })
 
         ipcMain.on(AppAction.Debug, (event, data) => {

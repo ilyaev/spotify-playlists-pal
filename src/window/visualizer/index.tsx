@@ -30,6 +30,7 @@ export class ThreeVisualizer extends React.Component<Props, State> {
     renderer: THREE.WebGLRenderer
     requestID: number
     fpsID: any
+    pingMacID: any
     pingID: any
     vscene: ThreeScene
     frames: number = 0
@@ -56,6 +57,7 @@ export class ThreeVisualizer extends React.Component<Props, State> {
         this.controls.dispose()
         this.fpsID && clearInterval(this.fpsID)
         this.pingID && clearInterval(this.pingID)
+        this.pingMacID && clearInterval(this.pingMacID)
     }
 
     sceneSetup() {
@@ -119,18 +121,18 @@ export class ThreeVisualizer extends React.Component<Props, State> {
             } else if (state.state === 'paused' && this.sync.state.active) {
                 this.sync.state.active = false
             }
-            if (this.sync.state.active && Math.abs(state.position * 1000 - this.sync.state.trackProgress) > 3) {
+            if (this.sync.state.active && Math.abs(state.position * 1000 - this.sync.state.trackProgress) > 3000) {
                 ipcRenderer.send(SpotifyEvents.TrackAnalysis, true)
             }
         })
 
-        setInterval(() => {
+        this.pingMacID = setInterval(() => {
             ipcRenderer.send(SpotifyEvents.StateOnMac)
         }, 1000)
 
         this.pingID = setInterval(() => {
             ipcRenderer.send(SpotifyEvents.TrackAnalysis, true)
-        }, 5000)
+        }, 10000)
     }
 
     startAnimationLoop(now: any) {
@@ -182,9 +184,9 @@ export class ThreeVisualizer extends React.Component<Props, State> {
         } else if (event.code === 'Enter') {
             this.state.isDev
                 ? ipcRenderer.send(AppAction.Fullscreen, true)
-                : ipcRenderer.send(AppAction.ExitBrowserState)
+                : ipcRenderer.send(AppAction.ExitBrowserState, true)
         } else if (event.code === 'Escape') {
-            ipcRenderer.send(AppAction.ExitBrowserState)
+            ipcRenderer.send(AppAction.ExitBrowserState, true)
         }
     }
 
@@ -221,8 +223,8 @@ export class ThreeVisualizer extends React.Component<Props, State> {
                 ></div>
                 {this.state.isDev ? (
                     <div style={{ position: 'absolute', color: 'white', top: '5px', left: '5px' }}>
-                        {this.state.fps} fps ; tempo - {tempo} ; progress - {progress.toFixed(1)} ; playing -{' '}
-                        {trackName}
+                        {this.state.fps} fps ; tempo - {tempo} ; playing - {trackName} ; progress -{' '}
+                        {progress.toFixed(1)} ;
                     </div>
                 ) : null}
             </>

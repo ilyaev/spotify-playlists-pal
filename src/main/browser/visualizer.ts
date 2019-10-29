@@ -30,11 +30,13 @@ export class AppBrowserStateVisualizer implements AppBrowserState {
 
     constructor(browser: AppBrowserWindow) {
         this.browser = browser
-        // this.createWin()
     }
 
-    onExit() {
+    onExit(hideFullScreen: boolean = false) {
         if (!this.win || this.win.isDestroyed()) {
+            return
+        }
+        if (!hideFullScreen && this.win.isFullScreen()) {
             return
         }
         this.browser.send('WINDOW_HIDE', this.stateId)
@@ -64,8 +66,9 @@ export class AppBrowserStateVisualizer implements AppBrowserState {
         this.win.show()
         this.browser.send('WINDOW_SHOW', this.stateId)
         if (isDev) {
-            // this.win.setSize(this.config.width + 600, this.config.height * 1.8)
+            this.win.setSize(this.config.width, this.config.height)
             this.win.webContents.openDevTools({ mode: 'bottom' })
+            this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
             // this.win.setFullScreen(true)
             // this.win.setPosition(0, 0, false)
         } else {

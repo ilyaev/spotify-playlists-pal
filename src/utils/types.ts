@@ -179,7 +179,7 @@ export interface AppBrowserState {
     stateId: string
     config: BrowserWindowConstructorOptions
     win: BrowserWindow
-    onExit: () => void
+    onExit: (hideFullScreen?: boolean) => void
     onEnter: (options?: AppBrowserOptions, refresh?: true) => void
     auth: (url: string) => void
 }

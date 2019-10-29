@@ -27,7 +27,6 @@ export class CubeScene extends ThreeScene {
     }
 
     onBeat(beat: any) {
-        console.log(this.track.state.activeIntervals)
         ;(this.cube.material as any).color.setRGB(...getRandomColor())
     }
 

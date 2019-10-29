@@ -37,11 +37,9 @@ export class AppBrowserStatePlayer implements AppBrowserState {
             })
     }
 
-    onExit() {
-        // if (this.win.isVisible()) {
+    onExit(hideFullScreen: boolean = false) {
         this.browser.send('WINDOW_HIDE', this.stateId)
         this.win.hide()
-        // }
     }
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {

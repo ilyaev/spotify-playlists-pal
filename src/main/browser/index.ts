@@ -49,8 +49,11 @@ export class AppBrowserWindow {
         this.state.win && this.state.win.show()
     }
 
-    hide() {
-        this.state.onExit()
+    hide(hideFullScreen: boolean = false) {
+        if (!hideFullScreen && this.state.win && !this.state.win.isDestroyed() && this.state.win.isFullScreen()) {
+            return
+        }
+        this.state.onExit(hideFullScreen)
     }
 
     getWin() {
@@ -101,7 +104,13 @@ export class AppBrowserWindow {
 
     send(channel: string, ...args: any[]) {
         console.log('SEND: ', channel, JSON.stringify(args).length + ' bytes')
-        this.states.forEach(state => state.win && state.win.webContents.send(channel, ...args))
+        this.states.forEach(
+            state =>
+                state.win &&
+                !state.win.isDestroyed() &&
+                state.win.webContents &&
+                state.win.webContents.send(channel, ...args)
+        )
     }
 
     getExternalDisplay() {

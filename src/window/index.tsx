@@ -38,7 +38,7 @@ export class AppSpotify extends React.Component<Props, State> {
         playbackState: {} as SpotifyPlaybackState,
         me: {} as SpotifyMe,
         playerActive: true,
-        vizActive: false,
+        vizActive: true,
     }
 
     componentDidMount() {
@@ -63,13 +63,10 @@ export class AppSpotify extends React.Component<Props, State> {
         })
 
         ipcRenderer.on('WINDOW_SHOW', (_event, stateID) => {
-            debugger
-            console.log('WIN SHOW!!!')
             if (stateID === BrowserState.Player) {
                 this.setState({ playerActive: true })
             }
             if (stateID === BrowserState.Visualizer) {
-                console.log('---ACTIVATE VIZ')
                 this.setState({ vizActive: true })
             }
         })
@@ -79,7 +76,6 @@ export class AppSpotify extends React.Component<Props, State> {
                 this.setState({ playerActive: false })
             }
             if (stateID === BrowserState.Visualizer) {
-                console.log('DEACTIVATE VIZ')
                 this.setState({ vizActive: false })
             }
         })
@@ -189,6 +185,11 @@ export class AppSpotify extends React.Component<Props, State> {
 
     renderVisualizer() {
         return <ThreeVisualizer vscene={new StarsScene()} active={this.state.vizActive} />
+        // return this.state.vizActive ? (
+        //     <ThreeVisualizer vscene={new StarsScene()} active={this.state.vizActive} />
+        // ) : (
+        //     'Loading...'
+        // )
     }
 
     sandbox() {

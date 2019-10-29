@@ -25,6 +25,7 @@ import {
     AppBrowserOptions,
     SpotifyArtist,
     SpotifyTrack,
+    AppAction,
 } from '../utils/types'
 import { AppTray } from './tray'
 import { SpotifyPlaylists } from './playlists'
@@ -73,7 +74,7 @@ export class AppWindow {
     async initialize() {
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        // isDev && this.browser.setState(BrowserState.Visualizer)
+        isDev && this.onVisualize()
         // isDev && this.showMiniPlayer()
     }
 
@@ -198,18 +199,41 @@ export class AppWindow {
             console.log(list.length, list.map(one => `${one.name} - ${one.artists[0].name}`))
         })
 
-        ipcMain.on(SpotifyEvents.TrackAnalysis, async _event => {
+        ipcMain.on(SpotifyEvents.TrackAnalysis, async (_event, ping: boolean = false) => {
+            const ts = new Date().getTime()
+            if (ping) {
+                const prevTrackID = this.getPlayingSongID()
+                await this.syncPlaybackState()
+
+                const currentTrackID = this.getPlayingSongID()
+                if (prevTrackID === currentTrackID) {
+                    this.browser.send(SpotifyEvents.TrackAnalysis, this.playbackState, false, ts)
+                    return
+                }
+            }
             const state = this.playbackState
             const data = await filesApi.loadTrackAnalysis(state.item.id) //('1WODCUH1tXKT8T3CjhzwCQ')
             await this.syncPlaybackState()
-            this.browser.send(SpotifyEvents.TrackAnalysis, state, data)
+            this.browser.send(SpotifyEvents.TrackAnalysis, state, data, ts)
         })
 
-        ipcMain.on('FULLSCREEN', (_event, flag: boolean) => {
+        ipcMain.on(SpotifyEvents.StateOnMac, () => {
+            spotifyMac.getState((error, state) => {
+                if (!error) {
+                    this.browser.send(SpotifyEvents.StateOnMac, state)
+                }
+            })
+        })
+
+        ipcMain.on(AppAction.Fullscreen, (_event, flag: boolean) => {
             this.browser.fullscreen(flag)
         })
 
-        ipcMain.on('DEBUG', (event, data) => {
+        ipcMain.on(AppAction.ExitBrowserState, () => {
+            this.browser.hide()
+        })
+
+        ipcMain.on(AppAction.Debug, (event, data) => {
             console.log('DEBUG: ', data)
         })
     }
@@ -434,6 +458,7 @@ export class AppWindow {
     }
 
     async devSetup() {
+        this.storeItem('IS_DEV', this.options.isDev ? '1' : '0')
         if (!this.options.isDev || process.argv.findIndex(arg => arg.indexOf('--remote-debugging-port') !== -1) >= 0) {
             return
         }
@@ -466,5 +491,11 @@ export class AppWindow {
             BrowserState.Player,
             trayBounds ? { position: { x: trayBounds.x, y: trayBounds.y + 20 } } : {}
         )
+    }
+
+    getPlayingSongID() {
+        return this.playbackState && this.playbackState.item && this.playbackState.item.id
+            ? this.playbackState.item.id
+            : ''
     }
 }

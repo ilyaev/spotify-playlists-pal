@@ -35,6 +35,7 @@ export class TrackSync {
             volume: [],
             beat: [],
         },
+        finished: false,
     } as Partial<TrackSyncState>)
 
     hooks: any = {
@@ -51,23 +52,31 @@ export class TrackSync {
         this.initHooks()
     }
 
-    setTrack(trackAnalysis: SpotifyAudioAnalysis) {
-        this.state.trackAnalysis = trackAnalysis
+    setTrack(trackAnalysis: SpotifyAudioAnalysis, id: string) {
+        if (id !== this.state.currentlyPlaying.id) {
+            this.state.trackAnalysis = trackAnalysis
+        }
     }
 
-    processPlaybackState(data: SpotifyPlaybackState) {
+    processPlaybackState(data: SpotifyPlaybackState, syncTimeOnly: boolean = false) {
         const songsInSync = JSON.stringify(data.item) === JSON.stringify(this.state.currentlyPlaying)
 
-        if (this.state.initialized === false || !songsInSync || this.state.active === false) {
-            return this.getTrackInfo(data)
+        if (!data.item || !data.item.duration_ms) {
+            return
         }
 
-        this.ping()
+        if ((this.state.initialized === false || !songsInSync) && syncTimeOnly === false) {
+            this.getTrackInfo(data)
+        } else {
+            this.state.initialTrackProgress = data.progress_ms
+            this.state.trackProgress = data.progress_ms
+            this.state.initialStart = window.performance.now()
+            this.state.active = data.is_playing
+        }
     }
 
     getTrackInfo(data: SpotifyPlaybackState) {
         const tick = window.performance.now()
-
         const analysis = this.state.trackAnalysis
 
         this.state.intervalTypes.forEach(t => {
@@ -93,15 +102,10 @@ export class TrackSync {
         this.state.initialStart = window.performance.now()
 
         if (this.state.initialized === false) {
-            // requestAnimationFrame(this.tick.bind(this))
             this.state.initialized = true
         }
 
-        if (this.state.active === false) {
-            this.state.active = true
-        }
-
-        this.ping()
+        this.state.active = data.is_playing
     }
 
     setActiveIntervals() {
@@ -142,7 +146,6 @@ export class TrackSync {
 
         const next = this.state.trackAnalysis.segments[index + 1].loudness_start
         const current = start + elapsed
-
         if (elapsed < loudness_max_time) {
             const progress = Math.min(1, elapsed / loudness_max_time)
             return interpolate(loudness_start, loudness_max)(progress)
@@ -160,7 +163,6 @@ export class TrackSync {
     }
 
     tick(now: number) {
-        // requestAnimationFrame(this.tick.bind(this))
         if (!this.state.active) return
 
         /** Set track progress and active intervals. */
@@ -199,13 +201,15 @@ export class TrackSync {
         /** Average the beat queue, then pass it to our size scale. */
         const beat = average(queues.beat)
         this.volume = sizeScale(beat)
+        if (this.state.trackProgress >= this.state.currentlyPlaying.duration_ms) {
+            this.state.finished = true
+            this.state.active = false
+        }
     }
 
     watch(key: string, method) {
         this.state.watch(key, method)
     }
-
-    ping() {}
 
     on(interval, method) {
         this.hooks[interval] = method
@@ -247,4 +251,5 @@ export interface TrackSyncState {
         beat: any[]
     }
     watch: ObserveWatcher
+    finished: boolean
 }

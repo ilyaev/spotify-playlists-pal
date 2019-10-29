@@ -28,20 +28,21 @@ export class AppBrowserWindow {
     initStates() {
         this.states.push(new AppBrowserStateSettings(this))
         this.states.push(new AppBrowserStatePlayer(this))
-        this.states.forEach(state => {
-            state.win.on('close', event => {
-                if (isDev) {
-                    app.quit()
-                } else {
-                    if (this.tray && !this.tobeClosed) {
-                        event.preventDefault()
-                        state.win.hide()
-                    }
-                }
-            })
-            state.win.webContents.on('will-redirect', this.options.onWillRedirect)
-        })
         this.states.push(new AppBrowserStateVisualizer(this))
+    }
+
+    sync(win: BrowserWindow) {
+        win.on('close', event => {
+            if (isDev) {
+                app.quit()
+            } else {
+                if (this.tray && !this.tobeClosed) {
+                    event.preventDefault()
+                    win.hide()
+                }
+            }
+        })
+        win.webContents.on('will-redirect', this.options.onWillRedirect)
     }
 
     show() {
@@ -49,10 +50,7 @@ export class AppBrowserWindow {
     }
 
     hide() {
-        if (this.state.win && this.state.win.isVisible()) {
-            this.send('WINDOW_HIDE', this.state.stateId)
-            this.state.win.hide()
-        }
+        this.state.onExit()
     }
 
     getWin() {

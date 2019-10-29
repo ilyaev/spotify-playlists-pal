@@ -29,6 +29,7 @@ export class AppBrowserStatePlayer implements AppBrowserState {
     constructor(browser: AppBrowserWindow) {
         this.browser = browser
         this.win = new BrowserWindow(this.config)
+        this.browser.sync(this.win)
 
         isDev ||
             this.win.on('blur', () => {
@@ -37,15 +38,19 @@ export class AppBrowserStatePlayer implements AppBrowserState {
     }
 
     onExit() {
-        if (this.win.isVisible()) {
-            this.browser.send('WINDOW_HIDE', this.stateId)
-            this.win.hide()
-        }
+        // if (this.win.isVisible()) {
+        this.browser.send('WINDOW_HIDE', this.stateId)
+        this.win.hide()
+        // }
     }
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {
         if (options && options.position) {
-            this.win.setPosition(options.position.x - Math.floor(this.config.width / 2) + 2 + 10, options.position.y, false)
+            this.win.setPosition(
+                options.position.x - Math.floor(this.config.width / 2) + 2 + 10,
+                options.position.y,
+                false
+            )
         } else {
             this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
         }

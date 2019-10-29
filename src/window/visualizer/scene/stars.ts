@@ -58,7 +58,10 @@ export class StarsScene extends ThreeScene {
     }
 
     update(now: number, track: TrackSync) {
-        const volume = track && track.volume ? track.volume : 0
+        let volume = Math.min(track && track.volume ? track.volume : 0, 10)
+        if (volume >= 10) {
+            volume = 0.5
+        }
         // this.camera.position.setY(-200 + Math.pow(volume, 10))
         this.track = track
 

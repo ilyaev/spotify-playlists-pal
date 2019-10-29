@@ -142,6 +142,7 @@ export enum SpotifyEvents {
     PlayContextURI = 'SPOTIFY-PLAY-CONTEXT-URI',
     PlayGenre = 'SPOTIFY-PLAY-GENRE',
     TrackAnalysis = 'SPOTIFY-TRACK-ANALYSIS',
+    StateOnMac = 'SPOTIFY-STATE-ON-MAC',
 }
 
 export enum BrowserState {
@@ -149,6 +150,12 @@ export enum BrowserState {
     Player = 'player',
     Index = 'index',
     Visualizer = 'visualizer',
+}
+
+export enum AppAction {
+    Debug = 'DEBUG',
+    Fullscreen = 'FULLSCREEN',
+    ExitBrowserState = 'EXIT_BROWSER_STATE',
 }
 
 export enum PlayerAction {
@@ -195,6 +202,13 @@ export interface PlayerVisualState {
     onEnter: () => void
     onExit: () => void
     mouseHover: boolean
+}
+
+export interface SpotifyStateOnMac {
+    volume: number
+    track_id: string
+    position: number
+    state: 'paused' | 'playing'
 }
 
 export interface ExtendedSpotifyApi extends SpotifyWebApi {

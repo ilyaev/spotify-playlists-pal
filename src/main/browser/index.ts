@@ -6,6 +6,7 @@ import { AppBrowserState } from 'utils/types'
 import { isDev } from 'src/main'
 import { AppTray } from 'src/main/tray'
 import { AppBrowserStateVisualizer } from './visualizer'
+import { AppBrowserStateSandbox } from './sandbox'
 
 interface Options {
     onWillRedirect: (event: Event, newUrl: string) => void
@@ -29,6 +30,7 @@ export class AppBrowserWindow {
         this.states.push(new AppBrowserStateSettings(this))
         this.states.push(new AppBrowserStatePlayer(this))
         this.states.push(new AppBrowserStateVisualizer(this))
+        this.states.push(new AppBrowserStateSandbox(this))
     }
 
     sync(win: BrowserWindow) {

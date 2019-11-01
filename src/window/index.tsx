@@ -16,9 +16,11 @@ import { ThreeVisualizer } from './visualizer'
 
 const styles = bem('spotify')
 import './index.less'
-import { SphereScene } from './visualizer/scene/sphere'
-import { RocksScene } from './visualizer/scene/rocks'
+// import { SphereScene } from './visualizer/scene/sphere'
+// import { RocksScene } from './visualizer/scene/rocks'
 import { StarsScene } from './visualizer/scene/stars'
+import { PageSandbox } from './sandbox'
+import { SquidScene } from './visualizer/scene/squid'
 
 interface Props {}
 
@@ -184,15 +186,10 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     renderVisualizer() {
-        return <ThreeVisualizer vscene={new StarsScene()} active={this.state.vizActive} />
-        // return this.state.vizActive ? (
-        //     <ThreeVisualizer vscene={new StarsScene()} active={this.state.vizActive} />
-        // ) : (
-        //     'Loading...'
-        // )
+        return <ThreeVisualizer vscene={new SquidScene()} active={this.state.vizActive} />
     }
 
     sandbox() {
-        // return <PlayerProgressBar total={10000} startFrom={3000} />
+        return <PageSandbox />
     }
 }

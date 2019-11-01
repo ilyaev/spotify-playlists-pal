@@ -155,7 +155,7 @@ export class ThreeVisualizer extends React.Component<Props, State> {
     }
 
     async startTrack() {
-        this.sync = new TrackSync({ volumeSmoothing: 5 })
+        this.sync = new TrackSync({ volumeSmoothing: 4 })
         this.sync.on('beat', this.vscene.onBeat.bind(this.vscene))
         this.sync.state.watch('finished', this.onFinishTrack.bind(this))
         this.sync.state.watch('active', active => {

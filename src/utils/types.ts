@@ -150,6 +150,7 @@ export enum BrowserState {
     Player = 'player',
     Index = 'index',
     Visualizer = 'visualizer',
+    Sandbox = 'sandbox',
 }
 
 export enum AppAction {

@@ -5,8 +5,8 @@ import { isDev } from 'src/main'
 import { AppBrowserWindow } from './index'
 import { waitForTime } from 'utils/index'
 
-export class AppBrowserStateVisualizer implements AppBrowserState {
-    stateId = BrowserState.Visualizer
+export class AppBrowserStateSandbox implements AppBrowserState {
+    stateId = BrowserState.Sandbox
     browser: AppBrowserWindow
 
     config = {
@@ -30,7 +30,7 @@ export class AppBrowserStateVisualizer implements AppBrowserState {
 
     constructor(browser: AppBrowserWindow) {
         this.browser = browser
-        isDev && this.createWin()
+        this.createWin()
     }
 
     onExit(hideFullScreen: boolean = false) {
@@ -62,7 +62,7 @@ export class AppBrowserStateVisualizer implements AppBrowserState {
 
     onEnter(options: AppBrowserOptions = { hash: '' }) {
         this.createWin()
-        this.browser.loadFile('index.html', { hash: options!.hash || BrowserState.Visualizer })
+        this.browser.loadFile('index.html', { hash: options!.hash || BrowserState.Sandbox })
         this.win.webContents.executeJavaScript('window.document.body.style.backgroundColor = "black"')
         this.win.show()
         this.browser.send('WINDOW_SHOW', this.stateId)
@@ -70,8 +70,6 @@ export class AppBrowserStateVisualizer implements AppBrowserState {
             this.win.setSize(this.config.width, this.config.height)
             this.win.webContents.openDevTools({ mode: 'right' })
             this.browser.moveWindowToDebugScreen(this.win, this.config.width, this.config.height)
-            // this.win.setFullScreen(true)
-            // this.win.setPosition(0, 0, false)
         } else {
             this.win.setFullScreen(true)
         }

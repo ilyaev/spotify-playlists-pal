@@ -29,6 +29,10 @@ module.exports = (env, args) => [
                     test: /\.less$/,
                     use: [{ loader: 'style-loader' }, { loader: 'css-loader' }, { loader: 'less-loader' }],
                 },
+                {
+                    test: /\.glsl$/,
+                    use: [{ loader: 'webpack-glsl-loader' }],
+                },
             ],
         },
         output: {

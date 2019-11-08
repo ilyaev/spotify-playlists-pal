@@ -30,6 +30,8 @@ export class ThreeScene {
 
     onBeat(b: any) {}
 
+    onSegment(s: any) {}
+
     setDefaultLights() {
         const lights = []
         lights[0] = new THREE.PointLight(0xffffff, 1, 0)
@@ -44,4 +46,6 @@ export class ThreeScene {
         this.scene.add(lights[1])
         this.scene.add(lights[2])
     }
+
+    dispose() {}
 }

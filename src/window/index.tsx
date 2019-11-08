@@ -21,6 +21,7 @@ import './index.less'
 import { StarsScene } from './visualizer/scene/stars'
 import { PageSandbox } from './sandbox'
 import { SquidScene } from './visualizer/scene/squid'
+import { PitchScene } from './visualizer/scene/pitch'
 
 interface Props {}
 
@@ -186,7 +187,7 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     renderVisualizer() {
-        return <ThreeVisualizer vscene={new SquidScene()} active={this.state.vizActive} />
+        return <ThreeVisualizer vscene={new PitchScene()} active={this.state.vizActive} />
     }
 
     sandbox() {

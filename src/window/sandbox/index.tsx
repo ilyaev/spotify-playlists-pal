@@ -5,7 +5,9 @@ import { ipcRenderer } from 'electron'
 import { AppAction } from 'utils/types'
 // import { SandboxScene } from './scene'
 // import { SandboxScene } from './wave'
-import { SandboxScene } from './lathe'
+// import { SandboxScene } from './lathe'
+// import { SandboxScene } from './synth'
+import { SandboxScene } from './shaders'
 
 interface Props {}
 

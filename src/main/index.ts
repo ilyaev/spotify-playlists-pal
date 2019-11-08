@@ -76,7 +76,7 @@ export class AppWindow {
         // return
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        // isDev && this.onVisualize()
+        isDev && this.onVisualize()
         // isDev && this.showMiniPlayer()
     }
 
@@ -416,6 +416,12 @@ export class AppWindow {
     }
 
     async syncPlaybackState() {
+        const authRaw = await this.loadItem('SPOTIFY_AUTH')
+        const auth = JSON.parse(authRaw || '{}')
+        const ellapsed = auth.timestamp ? mkTime() - auth.timestamp : 3600
+        if (ellapsed >= 3000) {
+            await this.refreshToken(false)
+        }
         this.playbackState = (await spotifyApi
             .getMyCurrentPlaybackState()
             .then(res => res.body)) as SpotifyPlaybackState

@@ -55,6 +55,8 @@ export class ThreeVisualizer extends React.Component<Props, State> {
         window.document.body.removeEventListener('keydown', this.handleKeyDown)
         window.cancelAnimationFrame(this.requestID)
         this.controls.dispose()
+        this.scene.dispose()
+        this.vscene.dispose()
         this.fpsID && clearInterval(this.fpsID)
         this.pingID && clearInterval(this.pingID)
         this.pingMacID && clearInterval(this.pingMacID)
@@ -157,6 +159,7 @@ export class ThreeVisualizer extends React.Component<Props, State> {
     async startTrack() {
         this.sync = new TrackSync({ volumeSmoothing: 4 })
         this.sync.on('beat', this.vscene.onBeat.bind(this.vscene))
+        this.sync.on('segment', this.vscene.onSegment.bind(this.vscene))
         this.sync.state.watch('finished', this.onFinishTrack.bind(this))
         this.sync.state.watch('active', active => {
             if (active !== this.state.active) {

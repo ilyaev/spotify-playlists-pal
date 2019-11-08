@@ -39,6 +39,8 @@ export class StarsScene extends ThreeScene {
         this.starMaterial = new THREE.PointsMaterial({
             color: 0xaaaaaa,
             map: sprite,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
             size: 1,
         })
 

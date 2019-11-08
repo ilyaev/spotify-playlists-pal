@@ -18,6 +18,7 @@ export class SquidScene extends ThreeScene {
     mesh: Mesh
     clock: THREE.Clock
     speed: number = 1
+    beatVolume: number = 18
 
     build() {
         this.camera.fov = 60
@@ -37,8 +38,10 @@ export class SquidScene extends ThreeScene {
 
     updateGeo(volume: number) {
         volume = volume * 2 + 4
-        const points = new Array(18).fill(0).map((one, i) => {
-            return new Vector2(Math.sin(i * (0.2 - volume / 50)) * (20 - volume) + 9, ((i - 9) * volume) / 4)
+        const len = 18 //Math.round(18 + Math.max(-5, this.beatVolume * 3))
+        const hlen = Math.round(len / 2)
+        const points = new Array(len).fill(0).map((one, i) => {
+            return new Vector2(Math.sin(i * (0.2 - volume / 50)) * (20 - volume) + 9, ((i - hlen) * volume) / 3)
             // return new Vector2(Math.sin(i * (0.2 - volume / 50)) * (20 - volume) + 9, ((i - 9) * volume) / 4) // Good
         })
 
@@ -60,9 +63,12 @@ export class SquidScene extends ThreeScene {
         const track = this.track
         const tempo = this.track ? this.track.state.activeIntervals.sections.tempo : 0
         let volume = Math.min(track && track.volume ? track.volume : 0, 10)
+        this.beatVolume = volume
         this.speed = volume * ((3 * tempo) / 160)
         const red = volume / 2
         this.material.color.setRGB(red, (red / 2) * volume, (red / 4) * volume)
+
+        console.log(this.track.state.activeIntervals.segments.pitches)
     }
 
     update(now: number, track: TrackSync) {

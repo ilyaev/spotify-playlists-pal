@@ -91,13 +91,16 @@ export class SandboxScene extends ThreeScene {
             t: { type: 'f', value: 0.0 },
             rad: { type: 'f', value: 0.25 },
             iResolution: { type: 'vec2', value: resolution },
+            u_resolution: { type: 'vec2', value: resolution },
+            u_circles: { type: 'i', value: 10 },
+            u_size: { type: 'f', value: 0.05 },
         }
 
         let geometry = new THREE.PlaneGeometry(resolution.x, resolution.y, 1, 1)
         // geometry.translate
         this.material = new THREE.ShaderMaterial({
             uniforms: uniforms,
-            fragmentShader: require('./shaders/circle.fg.glsl'), // require('./fragment.glsl'),
+            fragmentShader: require('./shaders/vs_circles.fs.glsl'), //require('./shaders/circle.fg.glsl'), // require('./fragment.glsl'),
             side: DoubleSide,
             vertexShader: require('./vertex.glsl'),
         })

@@ -56,6 +56,12 @@ void main() {
     vec2 uv = vUv.xy / u_resolution;
     uv.x *= u_resolution.x / u_resolution.y;
 
+    // uv = uv * 20.0;
+
+    vec2 n = floor(uv);
+
+    // uv = fract(uv) - 0.5;  //- sin(t*2.0 + n.x / 10.0) + cos(t + n.y / 10.0);
+
     float l = length(uv);
     float thi = atan(uv.x, uv.y);
     float fi = thi + PI;

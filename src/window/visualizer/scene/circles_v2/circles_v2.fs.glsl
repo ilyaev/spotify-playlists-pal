@@ -74,7 +74,7 @@ void main() {
 
         float size = start + u_size;
 
-        float c = circle(size, d + u_volume / 5.0 + float(i), l, thi, size / 10.0, true);
+        float c = circle(size, d + u_volume / 5.0 + float(i), l, thi, size / 3.0, false);
 
         allCircles = allCircles + c;
 

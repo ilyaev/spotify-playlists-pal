@@ -33,7 +33,10 @@ interface State {
     mode: string
     playerActive: boolean
     vizActive: boolean
+    currentScene: any
 }
+
+const allVscenes = [new CirclesScene(), new PitchScene(), new StarsScene()]
 
 export class AppSpotify extends React.Component<Props, State> {
     state: State = {
@@ -43,12 +46,14 @@ export class AppSpotify extends React.Component<Props, State> {
         me: {} as SpotifyMe,
         playerActive: true,
         vizActive: true,
+        currentScene: null,
     }
 
     componentDidMount() {
         const hash = document.location.hash.replace('#', '')
         this.setState({
             mode: hash || 'index',
+            currentScene: allVscenes[0],
         })
         this.initialize()
     }
@@ -188,7 +193,18 @@ export class AppSpotify extends React.Component<Props, State> {
     }
 
     renderVisualizer() {
-        return <ThreeVisualizer vscene={new CirclesScene()} active={this.state.vizActive} />
+        return (
+            <ThreeVisualizer
+                vscene={this.state.currentScene}
+                active={this.state.vizActive}
+                onNextScene={bar => {
+                    if (bar.confidence > 0.5) {
+                        const newScene = allVscenes[Math.floor(Math.random() * allVscenes.length)]
+                        this.setState({ currentScene: newScene })
+                    }
+                }}
+            />
+        )
     }
 
     sandbox() {

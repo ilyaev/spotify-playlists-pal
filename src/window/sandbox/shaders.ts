@@ -100,7 +100,7 @@ export class SandboxScene extends ThreeScene {
         // geometry.translate
         this.material = new THREE.ShaderMaterial({
             uniforms: uniforms,
-            fragmentShader: require('./shaders/vs_circles.fs.glsl'), //require('./shaders/circle.fg.glsl'), // require('./fragment.glsl'),
+            fragmentShader: require('./shaders/three.fs.glsl'), //require('./shaders/circle.fg.glsl'), // require('./fragment.glsl'),
             side: DoubleSide,
             vertexShader: require('./vertex.glsl'),
         })

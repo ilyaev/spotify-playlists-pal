@@ -1,29 +1,8 @@
 import { ThreeScene } from './base'
 import * as THREE from 'three'
 import { TrackSync } from 'utils/track'
-import { getRandomColor } from 'utils/index'
-import {
-    Vector2,
-    LatheGeometry,
-    MeshPhongMaterial,
-    Mesh,
-    DoubleSide,
-    Clock,
-    Color,
-    BoxGeometry,
-    Group,
-    DirectionalLight,
-    Vector3,
-    Material,
-} from 'three'
+import { LatheGeometry, MeshPhongMaterial, Mesh, DoubleSide, BoxGeometry, Group, DirectionalLight } from 'three'
 import ease from 'utils/easing'
-
-interface VelocityVector extends THREE.Vector3 {
-    velocity: number
-    acceleration: number
-}
-
-const rotations = ['x', 'y', 'z']
 
 export class PitchScene extends ThreeScene {
     track: TrackSync
@@ -48,17 +27,19 @@ export class PitchScene extends ThreeScene {
 
     build() {
         this.camera.fov = 60
-        this.camera.position.z = 60
-        this.clock = new Clock()
+
         this.started = this.clock.getElapsedTime()
 
         this.updateGeo(0.5, [])
         this.setDefaultLights()
 
-        this.jupiter = new DirectionalLight(0x00ff00, 0)
-        // this.jupiter.position = new Vector3(0, -15, 0)
-        this.jupiter.target = this.barGroup
+        if (!this.jupiter) {
+            this.jupiter = new DirectionalLight(0x00ff00, 0)
+            // this.jupiter.position = new Vector3(0, -15, 0)
+            this.jupiter.target = this.barGroup
+        }
 
+        this.scene.add(this.barGroup)
         this.scene.add(this.jupiter)
     }
 
@@ -88,7 +69,6 @@ export class PitchScene extends ThreeScene {
                 return cube
             })
             this.barGroup.rotateX(Math.PI / 8)
-            this.scene.add(this.barGroup)
             return
         }
 
@@ -159,7 +139,6 @@ export class PitchScene extends ThreeScene {
     }
 
     update(now: number, track: TrackSync) {
-        // console.log([this.clock.getElapsedTime(), this.clock.getElapsedTime() - this.started])
         const volume = this.getVolume()
         this.track = track
 

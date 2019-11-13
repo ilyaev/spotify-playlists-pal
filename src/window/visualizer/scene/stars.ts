@@ -24,27 +24,29 @@ export class StarsScene extends ThreeScene {
         this.camera.position.z = 1
         this.camera.rotation.x = Math.PI / 2
 
-        this.geo = new THREE.Geometry()
-        for (let i = 0; i < 6000; i++) {
-            const star = new THREE.Vector3(
-                Math.random() * 600 - 300,
-                Math.random() * 600 - 300,
-                Math.random() * 600 - 300
-            ) as VelocityVector
-            star.velocity = 0
-            star.acceleration = Math.random() * 0.08
-            this.geo.vertices.push(star)
-        }
-        const sprite = new THREE.TextureLoader().load('static/star.png')
-        this.starMaterial = new THREE.PointsMaterial({
-            color: 0xaaaaaa,
-            map: sprite,
-            blending: THREE.AdditiveBlending,
-            transparent: true,
-            size: 1,
-        })
+        if (!this.geo) {
+            this.geo = new THREE.Geometry()
+            for (let i = 0; i < 6000; i++) {
+                const star = new THREE.Vector3(
+                    Math.random() * 600 - 300,
+                    Math.random() * 600 - 300,
+                    Math.random() * 600 - 300
+                ) as VelocityVector
+                star.velocity = 0
+                star.acceleration = Math.random() * 0.08
+                this.geo.vertices.push(star)
+            }
+            const sprite = new THREE.TextureLoader().load('static/star.png')
+            this.starMaterial = new THREE.PointsMaterial({
+                color: 0xaaaaaa,
+                map: sprite,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                size: 1,
+            })
 
-        this.stars = new THREE.Points(this.geo, this.starMaterial)
+            this.stars = new THREE.Points(this.geo, this.starMaterial)
+        }
         this.scene.add(this.stars)
     }
 

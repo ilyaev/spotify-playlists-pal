@@ -10,6 +10,7 @@ import { SpotifyEvents, AppAction, SpotifyStateOnMac } from 'utils/types'
 interface Props {
     vscene?: ThreeScene
     active: boolean
+    onNextScene: (b: any) => void
 }
 
 interface State {
@@ -43,6 +44,7 @@ export class ThreeVisualizer extends React.Component<Props, State> {
         isDev: (localStorage.getItem('IS_DEV') || '0') === '1' ? true : false,
     }
     sync: TrackSync
+    toSwitchScene: boolean = false
 
     componentDidMount() {
         this.sceneSetup()
@@ -60,6 +62,25 @@ export class ThreeVisualizer extends React.Component<Props, State> {
         this.fpsID && clearInterval(this.fpsID)
         this.pingID && clearInterval(this.pingID)
         this.pingMacID && clearInterval(this.pingMacID)
+    }
+
+    componentWillReceiveProps(newProps: Props) {
+        if (newProps.vscene !== this.props.vscene) {
+            this.vscene.dispose()
+            this.vscene = newProps.vscene
+            this.scene.remove.apply(this.scene, this.scene.children)
+            this.vscene.scene = this.scene
+            this.vscene.camera = this.camera
+            this.vscene.renderer = this.renderer
+            this.toSwitchScene = false
+            this.camera.rotation.x = 0
+            this.camera.rotation.z = 0
+            this.camera.rotation.y = 0
+            this.camera.position.y = 0
+            this.camera.rotation.x = 0
+            this.vscene.build()
+            this.vscene.onEnter()
+        }
     }
 
     sceneSetup() {
@@ -158,18 +179,17 @@ export class ThreeVisualizer extends React.Component<Props, State> {
 
     async startTrack() {
         this.sync = new TrackSync({ volumeSmoothing: 4 })
-        this.sync.on('beat', this.vscene.onBeat.bind(this.vscene))
-        this.sync.on('segment', this.vscene.onSegment.bind(this.vscene))
+        this.sync.on('beat', b => this.vscene.onBeat(b))
+        this.sync.on('segment', s => this.vscene.onSegment(s))
+        this.sync.on('bar', b => {
+            this.props.onNextScene(b)
+        })
         this.sync.state.watch('finished', this.onFinishTrack.bind(this))
         this.sync.state.watch('active', active => {
             if (active !== this.state.active) {
                 this.setState({ active })
             }
         })
-
-        // await waitForTime(1000)
-        // ipcRenderer.send(SpotifyEvents.Play, 'spotify:track:5Jc21xaya2MrHp2KOetrBq', 'track')
-        // await waitForTime(500)
 
         ipcRenderer.send(SpotifyEvents.TrackAnalysis)
     }

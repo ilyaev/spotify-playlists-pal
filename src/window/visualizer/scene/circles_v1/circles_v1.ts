@@ -10,34 +10,37 @@ export class CirclesScene extends ThreeScene {
     track: TrackSync
     material: ShaderMaterial
     clock: Clock
+    mesh: THREE.Mesh
 
     build() {
         this.camera.fov = 60
         this.camera.position.z = 400
         this.camera.position.y = 0
-        this.clock = new Clock()
+        this.camera.rotation.x = 0
 
-        const resolution = new Vector2(640, 480)
-        let uniforms = {
-            t: { type: 'f', value: 0.0 },
-            rad: { type: 'f', value: 0.25 },
-            u_resolution: { type: 'vec2', value: resolution },
-            u_circles: { type: 'i', value: 10 },
-            u_size: { type: 'f', value: 0.05 },
-            u_volume: { type: 'f', value: 0.0 },
+        if (!this.material) {
+            const resolution = new Vector2(640, 480)
+            let uniforms = {
+                t: { type: 'f', value: 0.0 },
+                rad: { type: 'f', value: 0.25 },
+                u_resolution: { type: 'vec2', value: resolution },
+                u_circles: { type: 'i', value: 10 },
+                u_size: { type: 'f', value: 0.05 },
+                u_volume: { type: 'f', value: 0.0 },
+            }
+
+            const geometry = new THREE.PlaneGeometry(resolution.x, resolution.y, 1, 1)
+            this.material = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                fragmentShader: require('./circles_v1.fs.glsl'),
+                side: DoubleSide,
+                vertexShader: require('./circles_v1_vs.glsl'),
+            })
+
+            this.mesh = new THREE.Mesh(geometry, this.material)
         }
 
-        const geometry = new THREE.PlaneGeometry(resolution.x, resolution.y, 1, 1)
-        this.material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            fragmentShader: require('./circles_v1.fs.glsl'),
-            side: DoubleSide,
-            vertexShader: require('./circles_v1_vs.glsl'),
-        })
-
-        const mesh = new THREE.Mesh(geometry, this.material)
-
-        this.scene.add(mesh)
+        this.scene.add(this.mesh)
         // this.setDefaultLights()
     }
 

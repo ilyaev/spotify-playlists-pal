@@ -7,7 +7,8 @@ import { AppAction } from 'utils/types'
 // import { SandboxScene } from './wave'
 // import { SandboxScene } from './lathe'
 // import { SandboxScene } from './synth'
-import { SandboxScene } from './shaders'
+// import { SandboxScene } from './shaders'
+import { SandboxScene } from './nightroad/nightroad'
 
 interface Props {}
 
@@ -64,7 +65,9 @@ export class PageSandbox extends React.Component<Props, State> {
         this.camera.position.z = 0
 
         this.controls = new OrbitControls(this.camera, this.el)
-        this.renderer = new THREE.WebGLRenderer()
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
+        })
         this.renderer.setSize(width, height)
         this.el.appendChild(this.renderer.domElement)
 

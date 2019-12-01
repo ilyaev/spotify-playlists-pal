@@ -72,8 +72,8 @@ export class AppWindow {
     }
 
     async initialize() {
-        isDev && this.browser.setState(BrowserState.Sandbox)
-        return
+        // isDev && this.browser.setState(BrowserState.Sandbox)
+        // return
         await this.loadPlaylists()
         await this.syncPlaybackState()
         isDev && this.onVisualize()

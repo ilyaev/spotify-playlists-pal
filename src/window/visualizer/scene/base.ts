@@ -32,6 +32,8 @@ export class ThreeScene {
 
     onEnter() {}
 
+    onExit() {}
+
     onBeat(b: any) {}
 
     onSegment(s: any) {}

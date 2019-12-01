@@ -18,7 +18,7 @@ vec3 getDistortion(float progress) {
     float yAmp = uDistortionY.r;
     float yFreq = uDistortionY.g;
 
-    float shift = 0.0;//uTime * uCameraSpeed;
+    float shift = uTime * uCameraSpeed;
 
     return vec3(xAmp * nsin(shift + progress * PI * xFreq - PI / 2.0), yAmp * nsin(shift + progress * PI * yFreq - PI / 2.0), 0.0);
 

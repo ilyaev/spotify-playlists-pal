@@ -2,6 +2,7 @@
 uniform vec3 uColor;
 uniform vec2 uResolution;
 uniform float uTime;
+uniform float uVolume;
 varying vec3 vUv;
 
 float PI = 3.14159265358979;
@@ -26,6 +27,7 @@ void main() {
     // delimeter *= (1.0 - step(0.5, sin(uTime * delimeterSpeed + st.y * 3.14 * 30. * 2.)));
 
     float fade = 1.0 - sin(st.y * PI / 2.);
+    fade *= pow(uVolume, 3.) / 3.;
 
     gl_FragColor = vec4(vec3(vec3(delimeter * blink)*colYellow + uColor) * fade, 1.0);
 }

@@ -23,6 +23,8 @@ import { PageSandbox } from './sandbox'
 import { SquidScene } from './visualizer/scene/squid'
 import { PitchScene } from './visualizer/scene/pitch'
 import { CirclesScene } from './visualizer/scene/circles'
+import { NightroadScene } from './visualizer/scene/nightroad/nightroad'
+import { GlowScene } from './visualizer/scene/glows/glows'
 
 interface Props {}
 
@@ -36,7 +38,7 @@ interface State {
     currentScene: any
 }
 
-const allVscenes = [new CirclesScene(), new PitchScene(), new StarsScene()]
+const allVscenes = [new GlowScene()] //new NightroadScene()] //[new CirclesScene(), new PitchScene(), new StarsScene()]
 
 export class AppSpotify extends React.Component<Props, State> {
     state: State = {
@@ -200,7 +202,10 @@ export class AppSpotify extends React.Component<Props, State> {
                 onNextScene={bar => {
                     if (bar.confidence > 0.5) {
                         const newScene = allVscenes[Math.floor(Math.random() * allVscenes.length)]
-                        this.setState({ currentScene: newScene })
+                        if (newScene !== this.state.currentScene) {
+                            this.state.currentScene.onExit()
+                            this.setState({ currentScene: newScene })
+                        }
                     }
                 }}
             />

@@ -66,3 +66,9 @@ export default function ease(t, method = 'easeOutQuart') {
     const progress = Math.min(Math.max(0, t), 1)
     return easingFunctions[method](progress)
 }
+
+export const getRandomEasingFunc = () => {
+    const keys = Object.keys(easingFunctions).filter(f => (f.indexOf('Elastic') === -1 ? true : false))
+    const id = Math.floor(Math.random() * keys.length)
+    return keys[id]
+}

@@ -1,3 +1,5 @@
+/* eslint-disable require-atomic-updates */
+/* eslint-disable no-unused-vars */
 import { app, ipcMain, Rectangle, Event } from 'electron'
 import {
     APP_WINDOW_HEIGHT,
@@ -76,7 +78,7 @@ export class AppWindow {
         // return
         await this.loadPlaylists()
         await this.syncPlaybackState()
-        isDev && this.onVisualize()
+        // isDev && this.onVisualize()
         // isDev && this.showMiniPlayer()
     }
 

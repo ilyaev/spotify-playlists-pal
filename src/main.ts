@@ -1,4 +1,5 @@
-import { app } from 'electron'
+/* eslint-disable no-unused-vars */
+import { app, powerMonitor } from 'electron'
 import { AppWindow } from './main/index'
 import { Settings } from './utils/types'
 
@@ -20,3 +21,7 @@ const createWindow = () => {
 
 app.setLoginItemSettings({ openAsHidden: true })
 app.on('ready', createWindow)
+app.on('before-quit', e => {
+    // console.log('BEFORE_QUIT', e.sender)
+    appWindow.browser.tobeClosed = true
+})

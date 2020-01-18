@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { BrowserWindow, LoadFileOptions, app, Event, screen as EScreen } from 'electron'
 import { BrowserState, AppBrowserOptions } from 'utils/types'
 import { AppBrowserStateSettings } from './settings'
@@ -94,6 +95,7 @@ export class AppBrowserWindow {
     loadFile(path: string, options?: LoadFileOptions) {
         if (this.state.win) {
             if (options && options.hash && this.state.win.webContents.getURL().indexOf(`#${options.hash}`) !== -1) {
+                //
             } else {
                 this.state.win.loadFile(path, options)
             }

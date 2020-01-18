@@ -8,7 +8,8 @@ import { AppAction } from 'utils/types'
 // import { SandboxScene } from './lathe'
 // import { SandboxScene } from './synth'
 // import { SandboxScene } from './shaders'
-import { SandboxScene } from './nightroad/nightroad'
+// import { SandboxScene } from './nightroad/nightroad'
+import { SandboxScene } from './shader'
 
 interface Props {}
 

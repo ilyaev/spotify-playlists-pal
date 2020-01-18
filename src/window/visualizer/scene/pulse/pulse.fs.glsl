@@ -5,12 +5,13 @@ uniform vec2 u_resolution;
 uniform int u_circles; // 12
 uniform float u_size;  // 0.04
 uniform float u_volume;
+// float u_volume = 1.0;
 
 #define PI 3.14159265359
 
 float GLOW = max(0.1, u_volume / 2.);
 const int POINTS = 20;
-int ACTUAL_POINTS = 10 + int(u_volume * 2.);
+int ACTUAL_POINTS = 16;//16;
 
 
 
@@ -109,7 +110,12 @@ vec3 getPoint(vec2 uv, float radius, vec2 center, int index) {
     // float g = 1.0 - cos(float(index) + u_time);// 0.4;
     // float b = sin(float(index) + u_time * u_volume / 2.);
 
+    // float r = 0.6;
+    // float g = 0.4;
+    // float b = 0.4;
+
     vec3 color = vec3(r, g, b);
+    // color = vec3(rotate2d(pow(uv.y*3.,13.)) * vec2(0.6,0.4),0.4);
     return vec3(c) * color;
 }
 
@@ -122,22 +128,45 @@ void main() {
 
     // uv = rotate2d(PI / 8. * u_volume) * uv;
 
-    uv = rotate2d(PI * cpnoise(vec2(u_time / 2.5, 5234.2))) * uv;
+    uv = rotate2d(2. * PI * cpnoise(vec2(u_time  / 2.5, 5234.2))) * uv;
+
+    // uv = rotate2d(u_volume / 2. * 2. * PI);
+
+    // uv = rotate2d(sin(u_time + sin(u_time + u_volume)) * PI) * uv;
 
 
     float scale = 0.4 + pow(u_volume / 2., 3.) * 0.2;
 
+    float speed = max(0.5, pow((2.0 + u_volume), 2.) / 32.);
+
 
     for (int i = 0 ; i < POINTS ; ++i) {
 
-        if (i > ACTUAL_POINTS) {
+        if (i >= ACTUAL_POINTS) {
             break;
+        }
+
+        if (i == 8) {
+            uv = rotate2d(PI/2.) * uv;
         }
 
         radius = noise(vec2(u_time, 567.5 + float(i*2))) * 0.05;
 
-        float px = cpnoise(vec2(float(i*2) + sin(u_time) + 0.5, float(i*2 + 1) + cos(u_time) + 0.5)) * scale;
-        float py = cpnoise(vec2(float(i*2 + 100) + sin(u_time) + 0.5, float(i*2 + 100) + cos(u_time) + 0.5)) * scale;
+        float px = 0.;
+
+        float range = float(i + 1) * 0.05;
+
+        if (fract(float(i)/2.) > 0.) {
+            px = cos(PI + u_time * speed) * range;
+            // px = 1.4 - fract(u_time * speed) * 1.4 - 0.7; //sin(u_time) * 0.65;
+        } else {
+            px = cos(u_time * speed) * range;
+            // px = fract(u_time * speed) * 1.4 - 0.7; //sin(u_time) * 0.65;
+        }
+
+        // px += noise(vec2(float(i*3 + 200), u_time)) * (u_volume / 8.);
+
+        float py = cpnoise(vec2(float(i*2 + 100) + u_time + 0.5, float(i*2 + 100) + 0.5)) * scale;
 
         color = color + getPoint(uv, radius, vec2(px, py), i);
     }

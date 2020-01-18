@@ -25,6 +25,8 @@ import { PitchScene } from './visualizer/scene/pitch'
 import { CirclesScene } from './visualizer/scene/circles'
 import { NightroadScene } from './visualizer/scene/nightroad/nightroad'
 import { GlowScene } from './visualizer/scene/glows/glows'
+import { PulseScene } from './visualizer/scene/pulse/pulse'
+import { BlobsScene } from './visualizer/scene/blobs/blobs'
 
 interface Props {}
 
@@ -38,7 +40,7 @@ interface State {
     currentScene: any
 }
 
-const allVscenes = [new GlowScene()] //new NightroadScene()] //[new CirclesScene(), new PitchScene(), new StarsScene()]
+const allVscenes = [new BlobsScene()] //[new PulseScene()] // [new GlowScene()] //new NightroadScene()] //[new CirclesScene(), new PitchScene(), new StarsScene()]
 
 export class AppSpotify extends React.Component<Props, State> {
     state: State = {

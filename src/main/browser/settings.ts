@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { AppBrowserState, BrowserState, AppBrowserOptions } from '../../utils/types'
 import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import { APP_WINDOW_HEIGHT, APP_WINDOW_WIDTH } from '../../utils/const'

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { BrowserWindowConstructorOptions, BrowserWindow, LoadFileOptions } from 'electron'
 import {
     CurrentUsersProfileResponse,

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs'
 import { ExtendedSpotifyApi, SpotifyAudioAnalysis } from 'utils/types'
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import Observe from 'utils/observe'
 import { SpotifyPlaybackState, SpotifyAudioAnalysis } from 'utils/types'
 import { TrackObjectFull } from './spotify-types'

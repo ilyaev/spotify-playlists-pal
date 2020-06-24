@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { AppBrowserState, BrowserState, AppBrowserOptions } from '../../utils/types'
 import { BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from 'electron'
 

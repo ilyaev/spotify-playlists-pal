@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { SPOTIFY_CLIENT_ID } from '../env'
 import { SPOTIFY_CALLBACK_URL } from './const'
 import * as spotifyMac from 'utils/spotify-node-applescript'

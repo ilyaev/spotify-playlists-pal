@@ -53,7 +53,10 @@ export class AppTray {
         this.tray.on('click', (_event, _bounds, _position) => {
             this.options.onLeftClick()
             this.trayBounds = _bounds
-            this.contextMenu && this.tray.popUpContextMenu(this.contextMenu)
+            if (this.contextMenu) {
+                // this.tray.setContextMenu(this.contextMenu)
+                this.tray.popUpContextMenu(this.contextMenu)
+            }
         })
 
         this.tray.on('right-click', (_event, bounds) => {
@@ -208,7 +211,7 @@ export class AppTray {
                     ])
             )
         )
-        // this.tray.setContextMenu(this.contextMenu)
+        this.tray.setContextMenu(this.contextMenu)
         this.tray.setToolTip(
             this.playbackState.context ? this.lists.getDisplayName(this.playbackState.context.uri) : 'Nothing is played'
         )

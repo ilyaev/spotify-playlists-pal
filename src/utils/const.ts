@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Settings } from './types'
 
 export const APP_WINDOW_WIDTH = 400

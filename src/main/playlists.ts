@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { SpotifyPlaylist, SpotifyFavoriteList, SpotifyRecentItem, SpotifyAlbum } from '../utils/types'
 import { LOAD_LIST_PER_PAGE } from '../utils/const'
 import { spotifyApi } from '../utils/api'
@@ -18,7 +19,12 @@ export class SpotifyPlaylists {
 
     constructor() {}
 
-    sync(lists: SpotifyPlaylist[], favorites: SpotifyFavoriteList[], recent: SpotifyRecentItem[], albums: SpotifyAlbum[]) {
+    sync(
+        lists: SpotifyPlaylist[],
+        favorites: SpotifyFavoriteList[],
+        recent: SpotifyRecentItem[],
+        albums: SpotifyAlbum[]
+    ) {
         this.all = [...lists]
         this.favs = [...favorites]
         this.recent = [...recent]
@@ -114,7 +120,9 @@ export class SpotifyPlaylists {
 
     async loadAllSavedAlbums(): Promise<SpotifyAlbum[]> {
         try {
-            const meta = await spotifyApi.getMySavedAlbums({ limit: 1, fields: 'total,limit' } as any).then(res => res.body)
+            const meta = await spotifyApi
+                .getMySavedAlbums({ limit: 1, fields: 'total,limit' } as any)
+                .then(res => res.body)
             const pages = Math.ceil(meta.total / 50)
             const all: number[] = new Array(pages).fill(1)
             return pages > 0
@@ -134,7 +142,9 @@ export class SpotifyPlaylists {
 
     async isTrackInPlaylist(playlistId: string, uri: string) {
         try {
-            const meta = await spotifyApi.getPlaylistTracks(playlistId, { limit: 1, fields: 'total,limit' }).then(res => res.body)
+            const meta = await spotifyApi
+                .getPlaylistTracks(playlistId, { limit: 1, fields: 'total,limit' })
+                .then(res => res.body)
             const pages = Math.ceil(meta.total / LOAD_LIST_PER_PAGE)
             const all: number[] = new Array(pages).fill(1)
 

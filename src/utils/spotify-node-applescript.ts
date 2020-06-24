@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 //(c) npm i spotify-node-applescript
 
 var util = require('util'),

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import * as React from 'react'
 import { bem, waitForTime } from 'src/utils'
 import {
@@ -40,7 +41,15 @@ interface State {
     currentScene: any
 }
 
-const allVscenes = [new BlobsScene()] //[new PulseScene()] // [new GlowScene()] //new NightroadScene()] //[new CirclesScene(), new PitchScene(), new StarsScene()]
+const allVscenes = [
+    new StarsScene(),
+    new BlobsScene(),
+    new PulseScene(),
+    new GlowScene(),
+    new NightroadScene(),
+    new CirclesScene(),
+    new PitchScene(),
+]
 
 export class AppSpotify extends React.Component<Props, State> {
     state: State = {

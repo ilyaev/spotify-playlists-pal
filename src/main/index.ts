@@ -265,6 +265,7 @@ export class AppWindow {
     }
 
     goAuthSpotify() {
+        console.log('AUTH')
         this.browser.auth(spotifyApi.createAuthorizeURL(SPOTIFY_AUTH_SCOPE, SPOTIFY_AUTH_STATE))
     }
 

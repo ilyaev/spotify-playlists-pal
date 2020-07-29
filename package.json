@@ -14,7 +14,8 @@
     "dist": "yarn build && electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "shval": "yarn glslangValidator $1",
-    "app": "./dist/mac/Spotify\\ Companion.app/Contents/MacOS/Spotify\\ Companion"
+    "app": "./dist/mac/Spotify\\ Companion.app/Contents/MacOS/Spotify\\ Companion",
+    "deliver": "open ./dist/Spotify\\ Companion-1.0.0.dmg"
   },
   "build": {
     "appId": "pbartz.electron.spotify.companion",

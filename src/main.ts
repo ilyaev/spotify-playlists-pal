@@ -16,12 +16,11 @@ const createWindow = () => {
         },
     })
 
-    console.log('Electron App Started in Folder: ' + appWindow.basename)
+    console.log('Spotify Companion started in folder: ' + appWindow.basename)
 }
 
 app.setLoginItemSettings({ openAsHidden: true })
 app.on('ready', createWindow)
 app.on('before-quit', e => {
-    // console.log('BEFORE_QUIT', e.sender)
     appWindow.browser.tobeClosed = true
 })

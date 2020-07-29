@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { app, Tray, Menu, MenuItemConstructorOptions, Rectangle } from 'electron'
 import { TRAY_ICON_FILE } from '../utils/const'
 import { SpotifyPlaylists } from './playlists'

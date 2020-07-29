@@ -41,14 +41,24 @@ interface State {
     currentScene: any
 }
 
+// const allVscenes = [
+//     new StarsScene(),
+//     new BlobsScene(),
+//     new PulseScene(),
+//     new GlowScene(),
+//     new NightroadScene(),
+//     new CirclesScene(),
+//     new PitchScene(),
+// ]
+
 const allVscenes = [
     new StarsScene(),
-    new BlobsScene(),
-    new PulseScene(),
+    // new BlobsScene(),
+    // new PulseScene(),
     new GlowScene(),
     new NightroadScene(),
     new CirclesScene(),
-    new PitchScene(),
+    // new PitchScene(),
 ]
 
 export class AppSpotify extends React.Component<Props, State> {

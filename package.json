@@ -78,7 +78,7 @@
     "@types/react-tooltip": "^3.9.3",
     "@types/three": "^0.103.2",
     "d3-array": "^2.3.3",
-    "d3-scale": "^3.2.0",
+    "d3-scale": "^4.0.2",
     "electron-log": "^3.0.8",
     "electron-reload": "^1.5.0",
     "elemon": "^5.0.3",
